@@ -12,7 +12,7 @@ namespace Promises {
         public event StateChange OnStateChanged {
             add {
                 _onStateChanged += value;
-                if (value != null && _state != PromiseState.Unfulfilled)
+                if (_state != PromiseState.Unfulfilled)
                     value(this);
             }
             remove {

@@ -37,7 +37,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="describe_Promise.cs" />
+    <Compile Include="Tests\describe_Promise.cs" />
+    <Compile Include="Tests\TestHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
@@ -48,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Libraries\" />
+    <Folder Include="Tests\" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Libraries\nunit.framework.dll" />
