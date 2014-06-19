@@ -40,6 +40,7 @@
     <Compile Include="Tests\describe_Promise.cs" />
     <Compile Include="Tests\describe_Then.cs" />
     <Compile Include="Tests\TestHelper.cs" />
+    <Compile Include="Tests\describe_Rescue.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

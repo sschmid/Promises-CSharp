@@ -58,6 +58,15 @@ namespace Promises {
             return deferred.promise;
         }
 
+        public Promise<TResult> Rescue(Func<Exception, TResult> action) {
+            var deferred = new Deferred<TResult>();
+            deferred._depth = _depth;
+            addOnFulfilled(deferred.Fulfill);
+            addOnFailed(error => deferred.RunAsync(() => action(error)));
+            addOnProgress(deferred.setProgress);
+            return deferred.promise;
+        }
+
         void addOnFulfilled(Fulfilled value) {
             if (_state == PromiseState.Unfulfilled)
                 _onFulfilled += value;

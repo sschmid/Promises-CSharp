@@ -94,7 +94,7 @@ class describe_Then : nspec {
                         throw new Exception("error 42");
                     });
 
-                Thread.Sleep(shortDuration);
+                Thread.Sleep(actionDuration);
                 promise.progress.should_be(0.75f);
             };
         };
