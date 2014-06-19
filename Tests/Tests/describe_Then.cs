@@ -5,9 +5,9 @@ using System;
 
 class describe_Then : nspec {
 
-    const int shortDuration = 5;
-    const int actionDuration = 10;
-    const int actionDurationPlus = 15;
+    const int shortDuration = 2;
+    const int actionDuration = 4;
+    const int actionDurationPlus = 6;
 
     void when_then() {
         Promise<int> firstPromise = null;
@@ -20,6 +20,11 @@ class describe_Then : nspec {
                     Thread.Sleep(actionDuration);
                     return result + "_expensive";
                 });
+            };
+
+            after = () => {
+                firstPromise.Join();
+                thenPromise.Join();
             };
 
             context["initial state"] = () => {

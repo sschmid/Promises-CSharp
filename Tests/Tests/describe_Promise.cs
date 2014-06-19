@@ -5,9 +5,9 @@ using System.Threading;
 
 class describe_Promise : nspec {
 
-    const int shortDuration = 5;
-    const int actionDuration = 10;
-    const int actionDurationPlus = 15;
+    const int shortDuration = 2;
+    const int actionDuration = 4;
+    const int actionDurationPlus = 6;
 
     void when_created() {
         Promise<string> promise = null;
@@ -25,6 +25,8 @@ class describe_Promise : nspec {
                 fulfilledCalled = false;
                 failedCalled = false;
             };
+
+            after = () => promise.Join();
 
             context["when fulfilled"] = () => {
                 before = () => {
@@ -101,6 +103,8 @@ class describe_Promise : nspec {
                 };
             };
 
+            after = () => promise.Join();
+
             it["progresses"] = () => {
                 deferred.Progress(0.3f);
                 deferred.Progress(0.6f);
@@ -110,6 +114,17 @@ class describe_Promise : nspec {
                 eventProgress.should_be(1f);
                 deferred.promise.progress.should_be(1f);
                 progressEventCalled.should_be(4);
+            };
+
+            it["doesn't call OnProgressed when setting equal progress"] = () => {
+                deferred.Progress(0.3f);
+                deferred.Progress(0.3f);
+                deferred.Progress(0.3f);
+                deferred.Progress(0.6f);
+
+                eventProgress.should_be(0.6f);
+                deferred.promise.progress.should_be(0.6f);
+                progressEventCalled.should_be(2);
             };
 
             it["doesn't call OnProgressed when adding callback when progress is less than 1"] = () => {
@@ -138,8 +153,9 @@ class describe_Promise : nspec {
                 promise.OnFailed += error => failedCalled = true;
             };
 
+            after = () => promise.Join();
+
             context["initial state"] = () => {
-                after = () => promise.thread.Join();
                 it["is unfulfilled"] = () => promise.state.should_be(PromiseState.Unfulfilled);
                 it["has progressed 0%"] = () => promise.progress.should_be(0f);
                 it["has no result"] = () => promise.result.should_be_null();
@@ -159,6 +175,37 @@ class describe_Promise : nspec {
                 it["has no error"] = () => promise.error.should_be_null();
                 it["called OnFulfilled"] = () => fulfilledCalled.should_be_true();
                 it["has no thread assigned"] = () => promise.thread.should_be_null();
+            };
+
+            context["join"] = () => {
+                it["joins threads"] = () => {
+                    promise.Join();
+                    promise.state.should_be(PromiseState.Fulfilled);
+                };
+
+                it["does nothing when promise complete"] = () => {
+                    promise.Join();
+                    promise.Join();
+                };
+            };
+        };
+
+        context["toString"] = () => {
+            it["returns description of unfulfilled promise"] = () => {
+                var deferred = new Deferred<string>();
+                deferred.Progress(0.1234567890f);
+                deferred.promise.ToString().should_be("[Promise<String>: state = Unfulfilled, progress = 0,123]");
+            };
+
+            it["returns description of fulfilled promise"] = () => {
+                promise = TestHelper.PromiseWithResult("42");
+                promise.ToString().should_be("[Promise<String>: state = Fulfilled, result = 42]");
+            };
+
+            it["returns description of failed promise"] = () => {
+                promise = TestHelper.PromiseWithError<string>("error 42");
+                promise.Join();
+                promise.ToString().should_be("[Promise<String>: state = Failed, progress = 0, error = error 42]");
             };
         };
     }

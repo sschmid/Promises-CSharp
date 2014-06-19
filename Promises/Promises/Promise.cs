@@ -8,7 +8,7 @@ namespace Promises {
         Fulfilled
     }
 
-    public class Promise<TResult> {
+    public class Promise<T> {
         public event Fulfilled OnFulfilled {
             add { addOnFulfilled(value); }
             remove { _onFulfilled -= value; }
@@ -24,11 +24,12 @@ namespace Promises {
             remove { _onProgressed -= value; }
         }
 
-        public delegate void Fulfilled(TResult result);
+        public delegate void Fulfilled(T result);
         public delegate void Failed(Exception error);
         public delegate void Progressed(float progress);
+
         public PromiseState state { get { return _state; } }
-        public TResult result { get { return _result; } }
+        public T result { get { return _result; } }
         public Exception error { get { return _error; } }
         public float progress { get { return _progress; } }
         public Thread thread { get { return _thread; } }
@@ -38,33 +39,57 @@ namespace Promises {
         event Progressed _onProgressed;
 
         protected PromiseState _state;
-        protected TResult _result;
+        protected T _result;
         protected Exception _error;
         protected float _progress;
         protected Thread _thread;
+
         protected int _depth = 1;
 
-        public static Promise<TResult> PromiseWithAction(Func<TResult> action) {
-            return new Deferred<TResult>().RunAsync(action);
+        public static Promise<T> PromiseWithAction(Func<T> action) {
+            var deferred = new Deferred<T>();
+            deferred.action = action;
+            return deferred.RunAsync();
         }
 
-        public Promise<TThenResult> Then<TThenResult>(Func<TResult, TThenResult> action) {
-            var deferred = new Deferred<TThenResult>();
+        public void Join() {
+            if (_thread != null)
+                _thread.Join();
+        }
+
+        public Promise<TThen> Then<TThen>(Func<T, TThen> action) {
+            var deferred = new Deferred<TThen>();
+            deferred.action = () => action(result);
+            return Then(deferred);
+        }
+
+        public Promise<TThen> Then<TThen>(Promise<TThen> promise) {
+            var deferred = (Deferred<TThen>)promise;
             deferred._depth = _depth + 1;
-            // Unity workaround. Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
-            addOnFulfilled(result => deferred.RunAsync(() => action(result)));
+            // Unity workaround. For unknown reasons, Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
+            addOnFulfilled(result => deferred.RunAsync());
             addOnFailed(deferred.Fail);
             addOnProgress(progress => deferred.setProgress(progress / deferred._depth * _depth));
             return deferred.promise;
         }
 
-        public Promise<TResult> Rescue(Func<Exception, TResult> action) {
-            var deferred = new Deferred<TResult>();
+        public Promise<T> Rescue(Func<Exception, T> action) {
+            var deferred = new Deferred<T>();
+            deferred.action = () => action(error);
             deferred._depth = _depth;
             addOnFulfilled(deferred.Fulfill);
-            addOnFailed(error => deferred.RunAsync(() => action(error)));
+            addOnFailed(error => deferred.RunAsync());
             addOnProgress(deferred.setProgress);
             return deferred.promise;
+        }
+
+        public override string ToString() {
+            if (_state == PromiseState.Fulfilled)
+                return string.Format("[Promise<{0}>: state = {1}, result = {2}]", typeof(T).Name, _state, _result);
+            if (_state == PromiseState.Failed)
+                return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}, error = {3}]", typeof(T).Name, _state, _progress, error.Message);
+
+            return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}]", typeof(T).Name, _state, _progress);
         }
 
         void addOnFulfilled(Fulfilled value) {
@@ -97,7 +122,7 @@ namespace Promises {
                 } else if (_state == PromiseState.Failed) {
                     if (_onFailed != null)
                         _onFailed(_error);
-                } 
+                }
             } else {
                 throw new Exception(string.Format("Invalid state transition from {0} to {1}", _state, newState));
             }
@@ -106,9 +131,11 @@ namespace Promises {
         }
 
         protected void setProgress(float progress) {
-            _progress = progress;
-            if (_onProgressed != null)
-                _onProgressed(_progress);
+            if (Math.Abs(progress - _progress) > float.Epsilon) {
+                _progress = progress;
+                if (_onProgressed != null)
+                    _onProgressed(_progress);
+            }
         }
 
         void cleanup() {

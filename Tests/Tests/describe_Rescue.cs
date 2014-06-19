@@ -5,9 +5,9 @@ using Promises;
 
 class describe_Rescue : nspec {
     
-    const int shortDuration = 5;
-    const int actionDuration = 10;
-    const int actionDurationPlus = 15;
+    const int shortDuration = 2;
+    const int actionDuration = 4;
+    const int actionDurationPlus = 6;
 
     void when_rescue() {
         Promise<int> promise = null;
@@ -16,6 +16,8 @@ class describe_Rescue : nspec {
         before = () => {
             eventResult = 0;            
         };
+
+        after = () => promise.Join();
 
         it["rescues failed promise"] = () => {
             promise = TestHelper.PromiseWithError<int>("error 42").Rescue(error => 43);

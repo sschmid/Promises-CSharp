@@ -2,10 +2,11 @@
 using System.Threading;
 
 namespace Promises {
-    public class Deferred<TResult> : Promise<TResult> {
-        public Promise<TResult> promise { get { return this; } }
+    public class Deferred<T> : Promise<T> {
+        public Promise<T> promise { get { return this; } }
+        public Func<T> action;
 
-        public Promise<TResult> RunAsync(Func<TResult> action) {
+        public Promise<T> RunAsync() {
             _thread = new Thread(() => {
                 try {
                     Fulfill(action());
@@ -18,7 +19,7 @@ namespace Promises {
             return promise;
         }
 
-        public void Fulfill(TResult result) {
+        public void Fulfill(T result) {
             _result = result;
             setProgress(1f);
             transitionToState(PromiseState.Fulfilled);
