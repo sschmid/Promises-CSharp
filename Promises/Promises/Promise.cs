@@ -63,6 +63,7 @@ namespace Promises {
         protected Exception _error;
         protected float _progress;
         protected Thread _thread;
+        protected int _depth = 1;
 
         public static Promise<TResult> PromiseWithAction(Func<TResult> action) {
             return new Deferred<TResult>().RunAsync(action);
@@ -70,7 +71,10 @@ namespace Promises {
 
         public Promise<TThenResult> Then<TThenResult>(Func<TResult, TThenResult> action) {
             var deferred = new Deferred<TThenResult>();
-            OnFulfilled += result => deferred.RunAsync(() => action(_result));
+            deferred._depth = _depth + 1;
+            OnFulfilled += result => deferred.RunAsync(() => action(result));
+            OnFailed += deferred.Fail;
+            OnProgressed += progress => deferred.setProgress(progress / deferred._depth * _depth);
             return deferred.promise;
         }
 

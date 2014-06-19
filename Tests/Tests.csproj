@@ -38,6 +38,8 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\describe_Promise.cs" />
+    <Compile Include="Tests\describe_Then.cs" />
+    <Compile Include="Tests\TestHelper.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

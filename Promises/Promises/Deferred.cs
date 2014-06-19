@@ -20,7 +20,7 @@ namespace Promises {
 
         public void Fulfill(TResult result) {
             _result = result;
-            _progress = 1f;
+            setProgress(1f);
             transitionToState(PromiseState.Fulfilled);
         }
 
