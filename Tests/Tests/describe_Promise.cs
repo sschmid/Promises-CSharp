@@ -5,9 +5,8 @@ using System.Threading;
 
 class describe_Promise : nspec {
 
-    const int shortDuration = 2;
-    const int actionDuration = 4;
-    const int actionDurationPlus = 6;
+    const int actionDuration = 2;
+    const int actionDurationPlus = 4;
 
     void when_created() {
         Promise<string> promise = null;
@@ -34,7 +33,7 @@ class describe_Promise : nspec {
                     promise.OnFulfilled += result => eventResult = result;
                     promise.OnFailed += error => failedCalled = true;
                     promise.OnProgressed += progress => eventProgress = progress;
-                    Thread.Sleep(shortDuration);
+                    promise.Join();
                 };
                 it["is fulfilled"] = () => promise.state.should_be(PromiseState.Fulfilled);
                 it["has progressed 100%"] = () => promise.progress.should_be(1f);
@@ -64,7 +63,7 @@ class describe_Promise : nspec {
                     promise = TestHelper.PromiseWithError<string>("error 42");
                     promise.OnFulfilled += result => fulfilledCalled = true;
                     promise.OnFailed += error => eventError = error;
-                    Thread.Sleep(shortDuration);
+                    promise.Join();
                 };
                 it["failed"] = () => promise.state.should_be(PromiseState.Failed);
                 it["has progressed 0%"] = () => promise.progress.should_be(0f);
@@ -199,6 +198,7 @@ class describe_Promise : nspec {
 
             it["returns description of fulfilled promise"] = () => {
                 promise = TestHelper.PromiseWithResult("42");
+                promise.Join();
                 promise.ToString().should_be("[Promise<String>: state = Fulfilled, result = 42]");
             };
 

@@ -44,7 +44,8 @@ namespace Promises {
         protected float _progress;
         protected Thread _thread;
 
-        protected int _depth = 1;
+        int _depth = 1;
+        float _bias;
 
         public static Promise<T> PromiseWithAction(Func<T> action) {
             var deferred = new Deferred<T>();
@@ -69,7 +70,10 @@ namespace Promises {
             // Unity workaround. For unknown reasons, Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
             addOnFulfilled(result => deferred.RunAsync());
             addOnFailed(deferred.Fail);
-            addOnProgress(progress => deferred.setProgress(progress / deferred._depth * _depth));
+            addOnProgress(progress => {
+                deferred._bias = (float)_depth / (float)deferred._depth * progress;
+                deferred.setProgress(0);
+            });
             return deferred.promise;
         }
 
@@ -131,8 +135,9 @@ namespace Promises {
         }
 
         protected void setProgress(float progress) {
-            if (Math.Abs(progress - _progress) > float.Epsilon) {
-                _progress = progress;
+            var newProgress = _bias + progress / (float)_depth;
+            if (Math.Abs(newProgress - _progress) > float.Epsilon) {
+                _progress = newProgress;
                 if (_onProgressed != null)
                     _onProgressed(_progress);
             }

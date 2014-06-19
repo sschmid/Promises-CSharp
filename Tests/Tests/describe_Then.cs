@@ -6,8 +6,8 @@ using System;
 class describe_Then : nspec {
 
     const int shortDuration = 2;
-    const int actionDuration = 4;
-    const int actionDurationPlus = 6;
+    const int actionDuration = 3;
+    const int actionDurationPlus = 5;
 
     void when_then() {
         Promise<int> firstPromise = null;
@@ -84,7 +84,7 @@ class describe_Then : nspec {
                 Exception eventError = null;
                 promise.OnFulfilled += result => fulfilled = true;
                 promise.OnFailed += error => eventError = error;
-                Thread.Sleep(shortDuration);
+                promise.Join();
                 fulfilled.should_be_false();
                 eventError.Message.should_be("error 42");
                 promise.result.should_be_null();
@@ -101,6 +101,56 @@ class describe_Then : nspec {
 
                 Thread.Sleep(actionDuration);
                 promise.progress.should_be(0.75f);
+            };
+
+            it["calculates correct progress with custum progress"] = () => {
+                var deferred1 = new Deferred<int>();
+                deferred1.action = () => {
+                    var progress = 0f;
+                    while (progress < 1f) {
+                        progress += 0.25f;
+                        Console.Write(string.Empty);
+                        deferred1.Progress(progress);
+                        Thread.Sleep(actionDuration);
+                    }
+                    return 0;
+                };
+
+                var deferred2 = new Deferred<int>();
+                deferred2.action = () => {
+                    var progress = 0f;
+                    while (progress < 1f) {
+                        progress += 0.25f;
+                        Console.Write(string.Empty);
+                        deferred2.Progress(progress);
+                        Thread.Sleep(actionDuration);
+                    }
+                    return 0;
+                };
+
+                var promise = deferred1.RunAsync().Then(deferred2);
+
+                // deferred1 progress
+                Thread.Sleep(shortDuration);
+                promise.progress.should_be(0.125f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.25f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.375f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.5f);
+
+                // deferred2 progress
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.625f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.75f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(0.875f);
+                Thread.Sleep(actionDuration);
+                promise.progress.should_be(1f);
+
+                promise.Join();
             };
         };
     }
