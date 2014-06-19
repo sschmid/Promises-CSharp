@@ -15,26 +15,26 @@ class describe_Then : nspec {
 
         context["when first promise fulfilles"] = () => {
             before = () => {
-                firstPromise = TestHelper.PromiseWithResult<int>(42, actionDuration);
-                thenPromise = firstPromise.Then<string>(result => {
+                firstPromise = TestHelper.PromiseWithResult(42, actionDuration);
+                thenPromise = firstPromise.Then(result => {
                     Thread.Sleep(actionDuration);
                     return result + "_expensive";
                 });
             };
 
             context["initial state"] = () => {
-                it["first promise in initial state"] = () => assertInitialState<int>(firstPromise, 0f);
-                it["then promise is pending"] = () => assertPending<string>(thenPromise);
+                it["first promise in initial state"] = () => assertInitialState(firstPromise, 0f);
+                it["then promise is pending"] = () => assertPending(thenPromise);
             };
 
             context["after first promise fulfilled"] = () => {
                 before = () => Thread.Sleep(actionDurationPlus);
-                it["first promise is fulfilled"] = () => assertFulfilledState<int>(firstPromise, 42);
-                it["then promise in initial state"] = () => assertInitialState<string>(thenPromise, 0.5f);
+                it["first promise is fulfilled"] = () => assertFulfilledState(firstPromise, 42);
+                it["then promise in initial state"] = () => assertInitialState(thenPromise, 0.5f);
 
                 context["after then promise fulfilled"] = () => {
                     before = () => Thread.Sleep(actionDuration);
-                    it["then promise in fulfilled state"] = () => assertFulfilledState<string>(thenPromise, "42_expensive");
+                    it["then promise in fulfilled state"] = () => assertFulfilledState(thenPromise, "42_expensive");
                 };
             };
         };
@@ -42,7 +42,7 @@ class describe_Then : nspec {
         context["when first promise fails"] = () => {
             before = () => {
                 firstPromise = TestHelper.PromiseWithError<int>("error 42", actionDuration);
-                thenPromise = firstPromise.Then<string>(result => {
+                thenPromise = firstPromise.Then(result => {
                     Thread.Sleep(actionDuration);
                     return result + "_expensive";
                 });
@@ -50,8 +50,8 @@ class describe_Then : nspec {
 
             context["after first promise failed"] = () => {
                 before = () => Thread.Sleep(actionDurationPlus);
-                it["first promise failed"] = () => assertFailedState<int>(firstPromise, "error 42");
-                it["then promise failed"] = () => assertFailedState<string>(thenPromise, "error 42");
+                it["first promise failed"] = () => assertFailedState(firstPromise, "error 42");
+                it["then promise failed"] = () => assertFailedState(thenPromise, "error 42");
             };
         };
 
@@ -90,9 +90,8 @@ class describe_Then : nspec {
                 var promise = Promise<string>.PromiseWithAction(() => "1")
                     .Then(result => result + "2")
                     .Then(result => result + "3")
-                    .Then(result => {
+                    .Then<string>(result => {
                         throw new Exception("error 42");
-                        return "4";
                     });
 
                 Thread.Sleep(shortDuration);

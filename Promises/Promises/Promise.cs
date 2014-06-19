@@ -10,39 +10,18 @@ namespace Promises {
 
     public class Promise<TResult> {
         public event Fulfilled OnFulfilled {
-            add {
-                if (_state == PromiseState.Unfulfilled)
-                    _onFulfilled += value;
-                else if (_state == PromiseState.Fulfilled)
-                    value(_result);
-            }
-            remove {
-                _onFulfilled -= value;
-            }
+            add { addOnFulfilled(value); }
+            remove { _onFulfilled -= value; }
         }
 
         public event Failed OnFailed {
-            add {
-                if (_state == PromiseState.Unfulfilled)
-                    _onFailed += value;
-                else if (_state == PromiseState.Failed)
-                    value(_error);
-            }
-            remove {
-                _onFailed -= value;
-            }
+            add { addOnFailed(value); }
+            remove { _onFailed -= value; }
         }
 
         public event Progressed OnProgressed {
-            add {
-                if (_progress < 1f)
-                    _onProgressed += value;
-                else
-                    value(_progress);
-            }
-            remove {
-                _onProgressed -= value;
-            }
+            add { addOnProgress(value); }
+            remove { _onProgressed -= value; }
         }
 
         public delegate void Fulfilled(TResult result);
@@ -72,10 +51,32 @@ namespace Promises {
         public Promise<TThenResult> Then<TThenResult>(Func<TResult, TThenResult> action) {
             var deferred = new Deferred<TThenResult>();
             deferred._depth = _depth + 1;
-            OnFulfilled += result => deferred.RunAsync(() => action(result));
-            OnFailed += deferred.Fail;
-            OnProgressed += progress => deferred.setProgress(progress / deferred._depth * _depth);
+            // Unity workaround. Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
+            addOnFulfilled(result => deferred.RunAsync(() => action(result)));
+            addOnFailed(deferred.Fail);
+            addOnProgress(progress => deferred.setProgress(progress / deferred._depth * _depth));
             return deferred.promise;
+        }
+
+        void addOnFulfilled(Fulfilled value) {
+            if (_state == PromiseState.Unfulfilled)
+                _onFulfilled += value;
+            else if (_state == PromiseState.Fulfilled)
+                value(_result);
+        }
+
+        void addOnFailed(Failed value) {
+            if (_state == PromiseState.Unfulfilled)
+                _onFailed += value;
+            else if (_state == PromiseState.Failed)
+                value(_error);
+        }
+
+        void addOnProgress(Progressed value) {
+            if (_progress < 1f)
+                _onProgressed += value;
+            else
+                value(_progress);
         }
 
         protected void transitionToState(PromiseState newState) {

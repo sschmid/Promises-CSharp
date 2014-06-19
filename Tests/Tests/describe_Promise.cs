@@ -28,7 +28,7 @@ class describe_Promise : nspec {
 
             context["when fulfilled"] = () => {
                 before = () => {
-                    promise = TestHelper.PromiseWithResult<string>("42");
+                    promise = TestHelper.PromiseWithResult("42");
                     promise.OnFulfilled += result => eventResult = result;
                     promise.OnFailed += error => failedCalled = true;
                     promise.OnProgressed += progress => eventProgress = progress;
@@ -133,7 +133,7 @@ class describe_Promise : nspec {
                 eventError = null;
                 fulfilledCalled = false;
                 failedCalled = false;
-                promise = TestHelper.PromiseWithResult<string>("42", actionDuration);
+                promise = TestHelper.PromiseWithResult("42", actionDuration);
                 promise.OnFulfilled += result => fulfilledCalled = true;
                 promise.OnFailed += error => failedCalled = true;
             };
