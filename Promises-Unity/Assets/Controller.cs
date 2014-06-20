@@ -4,16 +4,25 @@ using Promises;
 
 public class Controller : MonoBehaviour {
     void Start() {
-        PromiseBehaviour.PromiseWithAction(run, onStateChanged);
+        Invoke("makePromise", 1f);
     }
 
-    string run() {
-        Thread.Sleep(2000);
-        return "Hello from a promise";
-    }
+    void makePromise() {
+        var promise = Promise<string>.PromiseWithAction(() => {
+            Thread.Sleep(500);
+            return "1";
+        }).Then(result => {
+            Thread.Sleep(500);
+            return result + ", 2";
+        }).Then(result => {
+            Thread.Sleep(500);
+            return result + ", 3";
+        }).Then(result => {
+            Thread.Sleep(500);
+            return "Hello from a promise " + result + " and 4";
+        });
 
-    void onStateChanged(Promise<object> promise) {
-        Debug.Log(promise.result);
-        new GameObject(promise.result as string);
+        var wrapper = PromiseWrapper.Wrap(promise);
+        wrapper.OnFulfilled += result => new GameObject((string)result);
     }
 }
