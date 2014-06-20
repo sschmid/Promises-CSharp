@@ -56,7 +56,6 @@ class describe_Rescue : nspec {
                     eventProgress = progress;
                     progressEventCalled++;
                 };
-
             };
 
             it["forwards progress"] = () => {
@@ -66,6 +65,8 @@ class describe_Rescue : nspec {
                 eventProgress.should_be(0.6f);
                 promise.progress.should_be(0.6f);
                 progressEventCalled.should_be(2);
+
+                deferred.Fulfill(0);
             };
         };
     }

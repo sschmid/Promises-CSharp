@@ -177,7 +177,7 @@ class describe_Promise : nspec {
             };
 
             context["join"] = () => {
-                it["joins threads"] = () => {
+                it["blocks until fulfilled or failed"] = () => {
                     promise.Join();
                     promise.state.should_be(PromiseState.Fulfilled);
                 };

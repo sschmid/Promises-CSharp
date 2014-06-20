@@ -30,6 +30,11 @@ class describe_Then : nspec {
             context["initial state"] = () => {
                 it["first promise in initial state"] = () => assertInitialState(firstPromise, 0f);
                 it["then promise is pending"] = () => assertPending(thenPromise);
+
+                it["joins"] = () => {
+                    thenPromise.Join();
+                    thenPromise.state.should_be(PromiseState.Fulfilled);
+                };
             };
 
             context["after first promise fulfilled"] = () => {
