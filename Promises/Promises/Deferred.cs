@@ -14,6 +14,7 @@ namespace Promises {
                     Fail(ex);
                 }
             });
+            _thread.Name = "Deferred.RunAsync(" + action + ")";
             _thread.IsBackground = true;
             _thread.Start();
             return promise;

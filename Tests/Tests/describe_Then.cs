@@ -1,72 +1,72 @@
 ﻿using NSpec;
 using Promises;
-using System.Threading;
 using System;
+using System.Threading;
 
 class describe_Then : nspec {
 
-    const int shortDuration = 2;
-    const int actionDuration = 3;
-    const int actionDurationPlus = 5;
+    const int delay = 5;
 
-    void when_then() {
+    void when_concatenating_with_then() {
         Promise<int> firstPromise = null;
         Promise<string> thenPromise = null;
 
+        after = () => {
+            firstPromise.Join();
+            thenPromise.Join();
+        };
+
         context["when first promise fulfilles"] = () => {
+
             before = () => {
-                firstPromise = TestHelper.PromiseWithResult(42, actionDuration);
+                firstPromise = TestHelper.PromiseWithResult(42, delay);
                 thenPromise = firstPromise.Then(result => {
-                    Thread.Sleep(actionDuration);
-                    return result + "_expensive";
+                    Thread.Sleep(delay);
+                    return result + "_then";
                 });
             };
 
-            after = () => {
-                firstPromise.Join();
-                thenPromise.Join();
-            };
-
-            context["initial state"] = () => {
-                it["first promise in initial state"] = () => assertInitialState(firstPromise, 0f);
+            context["before first promise finished"] = () => {
+                it["first promise is running"] = () => assertRunning(firstPromise, 0f);
                 it["then promise is pending"] = () => assertPending(thenPromise);
-
-                it["joins"] = () => {
+                it["then promise joins"] = () => {
                     thenPromise.Join();
-                    thenPromise.state.should_be(PromiseState.Fulfilled);
+                    assertFulfilled(firstPromise, 42);
+                    assertFulfilled(thenPromise, "42_then");
                 };
-            };
 
-            context["after first promise fulfilled"] = () => {
-                before = () => Thread.Sleep(actionDurationPlus);
-                it["first promise is fulfilled"] = () => assertFulfilledState(firstPromise, 42);
-                it["then promise in initial state"] = () => assertInitialState(thenPromise, 0.5f);
+                context["when first promise finished"] = () => {
+                    before = () => firstPromise.Join();
 
-                context["after then promise fulfilled"] = () => {
-                    before = () => Thread.Sleep(actionDuration);
-                    it["then promise in fulfilled state"] = () => assertFulfilledState(thenPromise, "42_expensive");
+                    it["first promise is fulfilled"] = () => assertFulfilled(firstPromise, 42);
+                    it["then promise in running with correct progress"] = () => assertRunning(thenPromise, 0.5f);
+
+                    context["when then promise finished"] = () => {
+                        before = () => thenPromise.Join();
+                        it["then promise is fulfilled"] = () => assertFulfilled(thenPromise, "42_then");
+                    };
                 };
             };
         };
 
         context["when first promise fails"] = () => {
+
             before = () => {
-                firstPromise = TestHelper.PromiseWithError<int>("error 42", actionDuration);
+                firstPromise = TestHelper.PromiseWithError<int>("error 42", delay);
                 thenPromise = firstPromise.Then(result => {
-                    Thread.Sleep(actionDuration);
-                    return result + "_expensive";
+                    Thread.Sleep(delay);
+                    return result + "_then";
                 });
+                firstPromise.Join();
             };
 
-            context["after first promise failed"] = () => {
-                before = () => Thread.Sleep(actionDurationPlus);
-                it["first promise failed"] = () => assertFailedState(firstPromise, "error 42");
-                it["then promise failed"] = () => assertFailedState(thenPromise, "error 42");
-            };
+            it["first promise failed"] = () => assertFailed(firstPromise, "error 42");
+            it["then promise failed"] = () => assertFailed(thenPromise, "error 42");
         };
 
-        context["when chaining"] = () => {
-            it["fulfills"] = () => {
+        context["when putting it all together"] = () => {
+            
+            it["fulfills all promises and passes result"] = () => {
                 var promise = Promise<string>.PromiseWithAction(() => "1")
                     .Then(result => result + "2")
                     .Then(result => result + "3")
@@ -74,7 +74,7 @@ class describe_Then : nspec {
 
                 var fulfilled = 0;
                 promise.OnFulfilled += result => fulfilled++;
-                Thread.Sleep(shortDuration);
+                promise.Join();
                 fulfilled.should_be(1);
                 promise.result.should_be("1234");
             };
@@ -97,26 +97,34 @@ class describe_Then : nspec {
             };
 
             it["calculates correct progress"] = () => {
-                var promise = Promise<string>.PromiseWithAction(() => "1")
-                    .Then(result => result + "2")
+                var promise = Promise<string>.PromiseWithAction(() => {
+                    Thread.Sleep(delay);
+                    return "1";
+                }).Then(result => result + "2")
                     .Then(result => result + "3")
                     .Then<string>(result => {
-                        throw new Exception("error 42");
-                    });
+                    throw new Exception("error 42");
+                });
 
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.75f);
+                int eventCalled = 0;
+                var expectedProgresses = new [] { 0.25f, 0.5f, 0.75, 1f };
+                promise.OnProgressed += progress => {
+                    progress.should_be(expectedProgresses[eventCalled]);
+                    eventCalled++;
+                };
+                promise.Join();
+                eventCalled.should_be(expectedProgresses.Length - 1);
             };
 
             it["calculates correct progress with custum progress"] = () => {
                 var deferred1 = new Deferred<int>();
                 deferred1.action = () => {
+                    Thread.Sleep(delay);
                     var progress = 0f;
                     while (progress < 1f) {
                         progress += 0.25f;
-                        Console.Write(string.Empty);
                         deferred1.Progress(progress);
-                        Thread.Sleep(actionDuration);
+                        Thread.Sleep(delay);
                     }
                     return 0;
                 };
@@ -126,41 +134,30 @@ class describe_Then : nspec {
                     var progress = 0f;
                     while (progress < 1f) {
                         progress += 0.25f;
-                        Console.Write(string.Empty);
                         deferred2.Progress(progress);
-                        Thread.Sleep(actionDuration);
+                        Thread.Sleep(delay);
                     }
                     return 0;
                 };
 
+                int eventCalled = 0;
+                var expectedProgresses = new [] {
+                    0.125f, 0.25f, 0.375, 0.5f,
+                    0.625f, 0.75f, 0.875f, 1f,
+                };
+
                 var promise = deferred1.RunAsync().Then(deferred2);
-
-                // deferred1 progress
-                Thread.Sleep(shortDuration);
-                promise.progress.should_be(0.125f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.25f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.375f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.5f);
-
-                // deferred2 progress
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.625f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.75f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(0.875f);
-                Thread.Sleep(actionDuration);
-                promise.progress.should_be(1f);
-
+                promise.OnProgressed += progress => {
+                    progress.should_be(expectedProgresses[eventCalled]);
+                    eventCalled++;
+                };
                 promise.Join();
+                eventCalled.should_be(expectedProgresses.Length);
             };
         };
     }
 
-    void assertInitialState<TResult>(Promise<TResult> p, float progress) {
+    void assertRunning<TResult>(Promise<TResult> p, float progress) {
         p.state.should_be(PromiseState.Unfulfilled);
         p.error.should_be_null();
         p.progress.should_be(progress);
@@ -184,7 +181,7 @@ class describe_Then : nspec {
             ((object)p.result).should_be_null();
     }
 
-    void assertFulfilledState<TResult>(Promise<TResult> p, TResult result) {
+    void assertFulfilled<TResult>(Promise<TResult> p, TResult result) {
         p.state.should_be(PromiseState.Fulfilled);
         p.error.should_be_null();
         p.progress.should_be(1f);
@@ -192,7 +189,7 @@ class describe_Then : nspec {
         p.result.should_be(result);
     }
 
-    void assertFailedState<TResult>(Promise<TResult> p, string errorMessage) {
+    void assertFailed<TResult>(Promise<TResult> p, string errorMessage) {
         p.state.should_be(PromiseState.Failed);
         p.error.should_not_be_null();
         p.error.Message.should_be(errorMessage);

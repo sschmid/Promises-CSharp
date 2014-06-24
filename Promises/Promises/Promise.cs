@@ -54,7 +54,7 @@ namespace Promises {
         }
 
         public void Join() {
-            while (_state == PromiseState.Unfulfilled);
+            while (_state == PromiseState.Unfulfilled || _thread != null);
         }
 
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {

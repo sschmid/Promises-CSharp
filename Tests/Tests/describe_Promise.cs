@@ -5,36 +5,76 @@ using System.Threading;
 
 class describe_Promise : nspec {
 
-    const int actionDuration = 2;
-    const int actionDurationPlus = 4;
+    const int delay = 5;
 
-    void when_created() {
+    void when_running_an_expensive_action() {
         Promise<string> promise = null;
         string eventResult = null;
         Exception eventError = null;
-        var eventProgress = 0f;
-        var fulfilledCalled = false;
-        var failedCalled = false;
+        float eventProgress = 0f;
+        bool fulfilledCalled = false, failedCalled = false, progressCalled = false;
 
-        context["cheap action"] = () => {
+        before = () => {
+            eventResult = null;
+            eventError = null;
+            eventProgress = -1f;
+            fulfilledCalled = failedCalled = progressCalled = false;
+        };
+
+        after = () => promise.Join();
+
+        context["before action finished"] = () => {
+
             before = () => {
-                eventResult = null;
-                eventError = null;
-                eventProgress = 0f;
-                fulfilledCalled = false;
-                failedCalled = false;
+                promise = TestHelper.PromiseWithResult("42", delay);
+                promise.OnFulfilled += result => {
+                    eventResult = result;
+                    fulfilledCalled = true;
+                };
+                promise.OnFailed += error => {
+                    eventError = error;
+                    failedCalled = true;
+                };
+                promise.OnProgressed += progress => {
+                    eventProgress = progress;
+                    eventProgress = progress;
+                };
             };
 
-            after = () => promise.Join();
+            it["is unfulfilled"] = () => promise.state.should_be(PromiseState.Unfulfilled);
+            it["has progressed 0%"] = () => promise.progress.should_be(0f);
+            it["has no result"] = () => promise.result.should_be_null();
+            it["has no error"] = () => promise.error.should_be_null();
+            it["has a background thread assigned"] = () => {
+                promise.thread.should_not_be_null();
+                promise.thread.should_not_be(Thread.CurrentThread);
+                promise.thread.IsBackground.should_be_true();
+            };
 
-            context["when fulfilled"] = () => {
-                before = () => {
-                    promise = TestHelper.PromiseWithResult("42");
-                    promise.OnFulfilled += result => eventResult = result;
-                    promise.OnFailed += error => failedCalled = true;
-                    promise.OnProgressed += progress => eventProgress = progress;
+            context["join"] = () => {
+                it["blocks until finished"] = () => {
                     promise.Join();
+                    promise.thread.should_be_null();
+                    promise.state.should_be(PromiseState.Fulfilled);
                 };
+
+                it["does nothing when promise already finished"] = () => {
+                    promise.Join();
+                    promise.Join();
+                    true.should_be_true();
+                };
+            };
+
+            context["events"] = () => {
+                it["doesn't call OnFulfilled"] = () => fulfilledCalled.should_be_false();
+                it["doesn't call OnFail"] = () => failedCalled.should_be_false();
+                it["doesn't call OnProgress"] = () => progressCalled.should_be_false();
+            };
+
+            context["when action finished"] = () => {
+
+                before = () => promise.Join();
+
                 it["is fulfilled"] = () => promise.state.should_be(PromiseState.Fulfilled);
                 it["has progressed 100%"] = () => promise.progress.should_be(1f);
                 it["has result"] = () => promise.result.should_be("42");
@@ -57,52 +97,62 @@ class describe_Promise : nspec {
                     it["calls OnProgress"] = () => eventProgress.should_be(1f);
                 };
             };
+        };
 
-            context["when failed"] = () => {
-                before = () => {
-                    promise = TestHelper.PromiseWithError<string>("error 42");
-                    promise.OnFulfilled += result => fulfilledCalled = true;
-                    promise.OnFailed += error => eventError = error;
-                    promise.Join();
-                };
-                it["failed"] = () => promise.state.should_be(PromiseState.Failed);
-                it["has progressed 0%"] = () => promise.progress.should_be(0f);
-                it["has no result"] = () => promise.result.should_be_null();
-                it["has error"] = () => promise.error.Message.should_be("error 42");
-                it["has no thread assigned"] = () => promise.thread.should_be_null();
+        context["when action throws an exception"] = () => {
 
-                context["events"] = () => {
-                    it["doesn't call OnFulfilled"] = () => fulfilledCalled.should_be_false();
-                    it["doesn't call OnFulfilled when adding callback"] = () => {
-                        var called = false;
-                        promise.OnFulfilled += result => called = true;
-                        called.should_be_false();
-                    };
-                    it["calls OnFailed"] = () => eventError.Message.should_be("error 42");
-                    it["calls OnFailed when adding callback"] = () => {
-                        Exception lateError = null;
-                        promise.OnFailed += error => lateError = error;
-                        lateError.Message.should_be("error 42");
-                    };
+            before = () => {
+                promise = TestHelper.PromiseWithError<string>("error 42", delay);
+                promise.OnFulfilled += result => {
+                    eventResult = result;
+                    fulfilledCalled = true;
                 };
+                promise.OnFailed += error => {
+                    eventError = error;
+                    failedCalled = true;
+                };
+                promise.OnProgressed += progress => {
+                    eventProgress = progress;
+                    eventProgress = progress;
+                };
+                promise.Join();
+            };
+
+            it["failed"] = () => promise.state.should_be(PromiseState.Failed);
+            it["has progressed 0%"] = () => promise.progress.should_be(0f);
+            it["has no result"] = () => promise.result.should_be_null();
+            it["has error"] = () => promise.error.Message.should_be("error 42");
+            it["has no thread assigned"] = () => promise.thread.should_be_null();
+
+            context["events"] = () => {
+                it["doesn't call OnFulfilled"] = () => fulfilledCalled.should_be_false();
+                it["doesn't call OnFulfilled when adding callback"] = () => {
+                    var called = false;
+                    promise.OnFulfilled += result => called = true;
+                    called.should_be_false();
+                };
+                it["calls OnFailed"] = () => eventError.Message.should_be("error 42");
+                it["calls OnFailed when adding callback"] = () => {
+                    Exception lateError = null;
+                    promise.OnFailed += error => lateError = error;
+                    lateError.Message.should_be("error 42");
+                };
+                it["doesn't call OnProgress"] = () => progressCalled.should_be_false();
             };
         };
 
-        context["progress"] = () => {
+        context["when creating a custom promise with Deferred"] = () => {
             Deferred<string> deferred = null;
-            var progressEventCalled = 0;
+            int progressEventCalled = 0;
 
             before = () => {
-                eventProgress = 0f;
-                progressEventCalled = 0;
                 deferred = new Deferred<string>();
+                progressEventCalled = 0;
                 deferred.OnProgressed += progress => {
                     eventProgress = progress;
                     progressEventCalled++;
                 };
             };
-
-            after = () => promise.Join();
 
             it["progresses"] = () => {
                 deferred.Progress(0.3f);
@@ -126,66 +176,18 @@ class describe_Promise : nspec {
                 progressEventCalled.should_be(2);
             };
 
-            it["doesn't call OnProgressed when adding callback when progress is less than 1"] = () => {
+            it["doesn't call OnProgressed when adding callback when progress is less than 100%"] = () => {
                 deferred.Progress(0.3f);
                 var called = false;
                 deferred.OnProgressed += progress => called = true;
                 called.should_be_false();
             };
 
-            it["calls OnProgressed when adding callback when progress is 1"] = () => {
+            it["calls OnProgressed when adding callback when progress is 100%"] = () => {
                 deferred.Progress(1f);
                 var called = false;
                 deferred.OnProgressed += progress => called = true;
                 called.should_be_true();
-            };
-        };
-
-        context["expensive action"] = () => {
-            before = () => {
-                eventResult = null;
-                eventError = null;
-                fulfilledCalled = false;
-                failedCalled = false;
-                promise = TestHelper.PromiseWithResult("42", actionDuration);
-                promise.OnFulfilled += result => fulfilledCalled = true;
-                promise.OnFailed += error => failedCalled = true;
-            };
-
-            after = () => promise.Join();
-
-            context["initial state"] = () => {
-                it["is unfulfilled"] = () => promise.state.should_be(PromiseState.Unfulfilled);
-                it["has progressed 0%"] = () => promise.progress.should_be(0f);
-                it["has no result"] = () => promise.result.should_be_null();
-                it["has no error"] = () => promise.error.should_be_null();
-                it["doesn't call OnFulfilled"] = () => fulfilledCalled.should_be_false();
-                it["has a thread assigned"] = () => {
-                    promise.thread.should_not_be_null();
-                    promise.thread.should_not_be(Thread.CurrentThread);
-                };
-            };
-
-            context["future state"] = () => {
-                before = () => Thread.Sleep(actionDurationPlus);
-                it["is fulfilled"] = () => promise.state.should_be(PromiseState.Fulfilled);
-                it["has progressed 100%"] = () => promise.progress.should_be(1f);
-                it["has result"] = () => promise.result.should_be("42");
-                it["has no error"] = () => promise.error.should_be_null();
-                it["called OnFulfilled"] = () => fulfilledCalled.should_be_true();
-                it["has no thread assigned"] = () => promise.thread.should_be_null();
-            };
-
-            context["join"] = () => {
-                it["blocks until fulfilled or failed"] = () => {
-                    promise.Join();
-                    promise.state.should_be(PromiseState.Fulfilled);
-                };
-
-                it["does nothing when promise complete"] = () => {
-                    promise.Join();
-                    promise.Join();
-                };
             };
         };
 
