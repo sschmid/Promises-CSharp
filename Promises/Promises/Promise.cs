@@ -45,7 +45,8 @@ namespace Promises {
         protected Thread _thread;
 
         int _depth = 1;
-        float _bias;
+        float _bias = 0f;
+        float _fraction = 1f;
 
         public static Promise<T> PromiseWithAction(Func<T> action) {
             var deferred = new Deferred<T>();
@@ -53,7 +54,7 @@ namespace Promises {
             return deferred.RunAsync();
         }
 
-        public void Join() {
+        public void Await() {
             while (_state == PromiseState.Unfulfilled || _thread != null);
         }
 
@@ -66,6 +67,8 @@ namespace Promises {
         public Promise<TThen> Then<TThen>(Promise<TThen> promise) {
             var deferred = (Deferred<TThen>)promise;
             deferred._depth = _depth + 1;
+            deferred._fraction = 1f / deferred._depth;
+
             // Unity workaround. For unknown reasons, Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
             addOnFulfilled(result => deferred.RunAsync());
             addOnFailed(deferred.Fail);
@@ -80,6 +83,7 @@ namespace Promises {
             var deferred = new Deferred<T>();
             deferred.action = () => action(error);
             deferred._depth = _depth;
+            deferred._fraction = 1f;
             addOnFulfilled(deferred.Fulfill);
             addOnFailed(error => deferred.RunAsync());
             addOnProgress(deferred.setProgress);
@@ -134,7 +138,7 @@ namespace Promises {
         }
 
         protected void setProgress(float progress) {
-            var newProgress = _bias + progress / (float)_depth;
+            var newProgress = _bias + progress * _fraction;
             if (Math.Abs(newProgress - _progress) > float.Epsilon) {
                 _progress = newProgress;
                 if (_onProgressed != null)

@@ -12,8 +12,8 @@ class describe_Then : nspec {
         Promise<string> thenPromise = null;
 
         after = () => {
-            firstPromise.Join();
-            thenPromise.Join();
+            firstPromise.Await();
+            thenPromise.Await();
         };
 
         context["when first promise fulfilles"] = () => {
@@ -29,20 +29,20 @@ class describe_Then : nspec {
             context["before first promise finished"] = () => {
                 it["first promise is running"] = () => assertRunning(firstPromise, 0f);
                 it["then promise is pending"] = () => assertPending(thenPromise);
-                it["then promise joins"] = () => {
-                    thenPromise.Join();
+                it["then promise waits"] = () => {
+                    thenPromise.Await();
                     assertFulfilled(firstPromise, 42);
                     assertFulfilled(thenPromise, "42_then");
                 };
 
                 context["when first promise finished"] = () => {
-                    before = () => firstPromise.Join();
+                    before = () => firstPromise.Await();
 
                     it["first promise is fulfilled"] = () => assertFulfilled(firstPromise, 42);
                     it["then promise in running with correct progress"] = () => assertRunning(thenPromise, 0.5f);
 
                     context["when then promise finished"] = () => {
-                        before = () => thenPromise.Join();
+                        before = () => thenPromise.Await();
                         it["then promise is fulfilled"] = () => assertFulfilled(thenPromise, "42_then");
                     };
                 };
@@ -57,7 +57,7 @@ class describe_Then : nspec {
                     Thread.Sleep(delay);
                     return result + "_then";
                 });
-                firstPromise.Join();
+                firstPromise.Await();
             };
 
             it["first promise failed"] = () => assertFailed(firstPromise, "error 42");
@@ -74,7 +74,7 @@ class describe_Then : nspec {
 
                 var fulfilled = 0;
                 promise.OnFulfilled += result => fulfilled++;
-                promise.Join();
+                promise.Await();
                 fulfilled.should_be(1);
                 promise.result.should_be("1234");
             };
@@ -89,7 +89,7 @@ class describe_Then : nspec {
                 Exception eventError = null;
                 promise.OnFulfilled += result => fulfilled = true;
                 promise.OnFailed += error => eventError = error;
-                promise.Join();
+                promise.Await();
                 fulfilled.should_be_false();
                 eventError.Message.should_be("error 42");
                 promise.result.should_be_null();
@@ -112,7 +112,7 @@ class describe_Then : nspec {
                     progress.should_be(expectedProgresses[eventCalled]);
                     eventCalled++;
                 };
-                promise.Join();
+                promise.Await();
                 eventCalled.should_be(expectedProgresses.Length - 1);
             };
 
@@ -151,7 +151,7 @@ class describe_Then : nspec {
                     progress.should_be(expectedProgresses[eventCalled]);
                     eventCalled++;
                 };
-                promise.Join();
+                promise.Await();
                 eventCalled.should_be(expectedProgresses.Length);
             };
         };

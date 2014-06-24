@@ -21,7 +21,7 @@ class describe_Promise : nspec {
             fulfilledCalled = failedCalled = progressCalled = false;
         };
 
-        after = () => promise.Join();
+        after = () => promise.Await();
 
         context["before action finished"] = () => {
 
@@ -51,16 +51,16 @@ class describe_Promise : nspec {
                 promise.thread.IsBackground.should_be_true();
             };
 
-            context["join"] = () => {
+            context["await"] = () => {
                 it["blocks until finished"] = () => {
-                    promise.Join();
+                    promise.Await();
                     promise.thread.should_be_null();
                     promise.state.should_be(PromiseState.Fulfilled);
                 };
 
                 it["does nothing when promise already finished"] = () => {
-                    promise.Join();
-                    promise.Join();
+                    promise.Await();
+                    promise.Await();
                     true.should_be_true();
                 };
             };
@@ -73,7 +73,7 @@ class describe_Promise : nspec {
 
             context["when action finished"] = () => {
 
-                before = () => promise.Join();
+                before = () => promise.Await();
 
                 it["is fulfilled"] = () => promise.state.should_be(PromiseState.Fulfilled);
                 it["has progressed 100%"] = () => promise.progress.should_be(1f);
@@ -115,7 +115,7 @@ class describe_Promise : nspec {
                     eventProgress = progress;
                     eventProgress = progress;
                 };
-                promise.Join();
+                promise.Await();
             };
 
             it["failed"] = () => promise.state.should_be(PromiseState.Failed);
@@ -200,13 +200,13 @@ class describe_Promise : nspec {
 
             it["returns description of fulfilled promise"] = () => {
                 promise = TestHelper.PromiseWithResult("42");
-                promise.Join();
+                promise.Await();
                 promise.ToString().should_be("[Promise<String>: state = Fulfilled, result = 42]");
             };
 
             it["returns description of failed promise"] = () => {
                 promise = TestHelper.PromiseWithError<string>("error 42");
-                promise.Join();
+                promise.Await();
                 promise.ToString().should_be("[Promise<String>: state = Failed, progress = 0, error = error 42]");
             };
         };

@@ -12,12 +12,12 @@ class describe_Rescue : nspec {
         string eventResult = null;
 
         before = () => eventResult = null;
-        after = () => promise.Join();
+        after = () => promise.Await();
 
         it["rescues failed promise"] = () => {
             promise = TestHelper.PromiseWithError<string>("error 42", delay).Rescue(error => "rescue");
             promise.OnFulfilled += result => eventResult = result;
-            promise.Join();
+            promise.Await();
             promise.state.should_be(PromiseState.Fulfilled);
             promise.progress.should_be(1f);
             promise.result.should_be("rescue");
@@ -28,7 +28,7 @@ class describe_Rescue : nspec {
         it["fulfills when no error"] = () => {
             promise = TestHelper.PromiseWithResult("42", delay).Rescue(error => "rescue");
             promise.OnFulfilled += result => eventResult = result;
-            promise.Join();
+            promise.Await();
             Thread.SpinWait(0);
             promise.state.should_be(PromiseState.Fulfilled);
             promise.progress.should_be(1f);
@@ -56,13 +56,38 @@ class describe_Rescue : nspec {
             it["forwards progress"] = () => {
                 deferred.Progress(0.3f);
                 deferred.Progress(0.6f);
-
-                eventProgress.should_be(0.6f);
-                promise.progress.should_be(0.6f);
-                progressCalled.should_be(2);
-
                 deferred.Fulfill("42");
+
+                eventProgress.should_be(1f);
+                promise.progress.should_be(1f);
+                progressCalled.should_be(3);
             };
+        };
+
+        it["calculates correct progress when concatenating with then"] = () => {
+            Func<string, string> p = result => {
+                Thread.Sleep(delay);
+                return "42";
+            };
+            Func<Exception, string> r = error => {
+                Thread.Sleep(delay);
+                return "error";
+            };
+
+            promise = TestHelper.PromiseWithResult("42", delay)
+                .Then(p)
+                .Then(p)
+                .Then(p).Rescue(r);
+
+
+            int eventCalled = 0;
+            var expectedProgresses = new [] { 0.25f, 0.5f, 0.75f, 1f };
+            promise.OnProgressed += progress => {
+                progress.should_be(expectedProgresses[eventCalled]);
+                eventCalled++;
+            };
+            promise.Await();
+            eventCalled.should_be(expectedProgresses.Length);
         };
     }
 }
