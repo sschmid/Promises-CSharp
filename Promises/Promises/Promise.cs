@@ -40,6 +40,40 @@ namespace Promises {
 
             return deferred.promise;
         }
+
+        public static Promise<T> Any<T>(params Promise<T>[] promises) {
+            var deferred = new Deferred<T>();
+            var failed = 0;
+            for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
+                var localIndex = i;
+                var promise = promises[localIndex];
+                promise.OnFulfilled += result => {
+                    if (deferred.state == PromiseState.Unfulfilled) {
+                        deferred.Fulfill(result);
+                        foreach (var p in promises)
+                            if (p != promise)
+                                p.Cancel();
+                    }
+                };
+                promise.OnFailed += error => {
+                    if (deferred.state == PromiseState.Unfulfilled) {
+                        failed++;
+                        if (failed == promisesLength)
+                            deferred.Fail(new Exception());
+                    }
+                };
+                promise.OnProgressed += progress =>  {
+                    var maxProgress = 0f;
+                    foreach (var p in promises) {
+                        if (p.progress > maxProgress)
+                            maxProgress += p.progress;
+                    }
+                    deferred.Progress(maxProgress);
+                };
+            }
+
+            return deferred.promise;
+        }
     }
 
     public class Promise<T> {

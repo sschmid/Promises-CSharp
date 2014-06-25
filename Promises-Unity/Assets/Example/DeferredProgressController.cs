@@ -6,13 +6,13 @@ using System.Threading;
 public class DeferredProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getFourPromises();
+        var promise = getDeferred();
         var wrapper = PromiseWrapper.Wrap(promise, "Deferred");
         wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
-        wrapper.OnFulfilled += result => new GameObject("4 promises done");
+        wrapper.OnFulfilled += result => new GameObject("Deferred done");
     }
 
-    Promise<int> getFourPromises() {
+    Promise<int> getDeferred() {
         return customProgressPromise(true).Then(customProgressPromise()).Then(customProgressPromise()).Then(customProgressPromise());
     }
 

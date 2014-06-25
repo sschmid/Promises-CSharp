@@ -4,25 +4,25 @@ using System.Threading;
 using System;
 using System.Collections.Generic;
 
-public class AllProgressController : MonoBehaviour {
+public class AnyProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getAllPromise();
-        var wrapper = PromiseWrapper.Wrap(promise, "All");
+        var promise = getAnyPromise();
+        var wrapper = PromiseWrapper.Wrap(promise, "Any");
         wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
-        wrapper.OnFulfilled += result => new GameObject("All done");
+        wrapper.OnFulfilled += result => new GameObject("Any done");
     }
 
-    Promise<object[]> getAllPromise() {
-        var promises = new List<Promise<object>>();
+    Promise<int> getAnyPromise() {
+        var promises = new List<Promise<int>>();
         for (int i = 0; i < 10; i++) {
             var localIndex = i + 1;
             promises.Add(Promise.WithAction(() => {
                 Thread.Sleep(localIndex * 500);
-                return new object();
+                return 0;
             }));
         }
-        return Promise.All(promises.ToArray());
+        return Promise.Any(promises.ToArray());
     }
 
     int sleepAction(int result) {

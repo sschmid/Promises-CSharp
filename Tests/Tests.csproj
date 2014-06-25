@@ -42,6 +42,7 @@
     <Compile Include="Tests\TestHelper.cs" />
     <Compile Include="Tests\describe_Rescue.cs" />
     <Compile Include="Tests\describe_All.cs" />
+    <Compile Include="Tests\describe_Any.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
