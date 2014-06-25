@@ -86,6 +86,11 @@ namespace Promises {
             while (_state == PromiseState.Unfulfilled || _thread != null);
         }
 
+        public void Cancel() {
+            if (_thread != null)
+                _thread.Abort();
+        }
+
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {
             var deferred = new Deferred<TThen>();
             deferred.action = () => action(result);

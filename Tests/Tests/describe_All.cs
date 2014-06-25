@@ -17,7 +17,7 @@ class describe_All : nspec {
             before = () => {
                 eventProgresses = new List<float>();
                 p1 = TestHelper.PromiseWithResult<object>(42, delay);
-                p2 = TestHelper.PromiseWithResult<object>("42", delay);
+                p2 = TestHelper.PromiseWithResult<object>("42", 2 * delay);
                 promise = Promise.All(p1, p2);
                 promise.OnProgressed += eventProgresses.Add;
                 promise.Await();
@@ -45,7 +45,7 @@ class describe_All : nspec {
             before = () => {
                 eventProgresses = new List<float>();
                 p1 = TestHelper.PromiseWithResult<object>(42, delay);
-                p2 = TestHelper.PromiseWithError<object>("error 42", delay);
+                p2 = TestHelper.PromiseWithError<object>("error 42", 2 * delay);
                 promise = Promise.All(p1, p2);
                 promise.OnProgressed += eventProgresses.Add;
                 promise.Await();
