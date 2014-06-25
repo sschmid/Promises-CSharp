@@ -74,6 +74,45 @@ namespace Promises {
 
             return deferred.promise;
         }
+
+        public static Promise<object[]> Collect(params Promise<object>[] promises) {
+            var deferred = new Deferred<object[]>();
+            var results = new object[promises.Length];
+            var done = 0;
+
+            for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
+                var localIndex = i;
+                var promise = promises[localIndex];
+                promise.OnFulfilled += result => {
+                    results[localIndex] = result;
+                    done++;
+                    if (done == promisesLength)
+                        deferred.Fulfill(results);
+                };
+                promise.OnFailed += error => {
+                    done++;
+                    var totalProgress = 0f;
+                    foreach (var p in promises) {
+                        if (p.state == PromiseState.Failed)
+                            totalProgress += 1f;
+                        else
+                            totalProgress += p.progress;
+                    }
+                    deferred.Progress(totalProgress / (float)promisesLength);
+
+                    if (done == promisesLength)
+                        deferred.Fulfill(results);
+                };
+                promise.OnProgressed += progress =>  {
+                    var totalProgress = 0f;
+                    foreach (var p in promises)
+                        totalProgress += p.progress;
+                    deferred.Progress(totalProgress / (float)promisesLength);
+                };
+            }
+
+            return deferred.promise;
+        }
     }
 
     public class Promise<T> {
