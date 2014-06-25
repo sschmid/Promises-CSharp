@@ -8,6 +8,40 @@ namespace Promises {
         Fulfilled
     }
 
+    public static class Promise {
+        public static Promise<T> WithAction<T>(Func<T> action) {
+            var deferred = new Deferred<T>();
+            deferred.action = action;
+            return deferred.RunAsync();
+        }
+
+        public static Promise<object[]> All(params Promise<object>[] promises) {
+            var deferred = new Deferred<object[]>();
+            var results = new object[promises.Length];
+            var done = 0;
+
+            for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
+                var localIndex = i;
+                var promise = promises[localIndex];
+                promise.OnFulfilled += result => {
+                    results[localIndex] = result;
+                    done++;
+                    if (done == promisesLength)
+                        deferred.Fulfill(results);
+                };
+                promise.OnFailed += deferred.Fail;
+                promise.OnProgressed += progress =>  {
+                    var totalProgress = 0f;
+                    foreach (var p in promises)
+                        totalProgress += p.progress;
+                    deferred.Progress(totalProgress / (float)promisesLength);
+                };
+            }
+
+            return deferred.promise;
+        }
+    }
+
     public class Promise<T> {
         public event Fulfilled OnFulfilled {
             add { addOnFulfilled(value); }
@@ -48,12 +82,6 @@ namespace Promises {
         float _bias = 0f;
         float _fraction = 1f;
 
-        public static Promise<T> PromiseWithAction(Func<T> action) {
-            var deferred = new Deferred<T>();
-            deferred.action = action;
-            return deferred.RunAsync();
-        }
-
         public void Await() {
             while (_state == PromiseState.Unfulfilled || _thread != null);
         }
@@ -74,7 +102,7 @@ namespace Promises {
             addOnFailed(deferred.Fail);
             addOnProgress(progress => {
                 deferred._bias = (float)_depth / (float)deferred._depth * progress;
-                deferred.setProgress(0);
+                deferred.Progress(0);
             });
             return deferred.promise;
         }
@@ -86,7 +114,7 @@ namespace Promises {
             deferred._fraction = 1f;
             addOnFulfilled(deferred.Fulfill);
             addOnFailed(error => deferred.RunAsync());
-            addOnProgress(deferred.setProgress);
+            addOnProgress(deferred.Progress);
             return deferred.promise;
         }
 

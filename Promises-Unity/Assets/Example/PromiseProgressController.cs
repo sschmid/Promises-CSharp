@@ -12,8 +12,7 @@ public class PromiseProgressController : MonoBehaviour {
     }
 
     Promise<int> getTenPromises() {
-        var promise = Promise<int>
-            .PromiseWithAction(() => {
+        var promise = Promise.WithAction(() => {
             Thread.Sleep(500);
             return 0;
         });

@@ -67,7 +67,7 @@ class describe_Then : nspec {
         context["when putting it all together"] = () => {
             
             it["fulfills all promises and passes result"] = () => {
-                var promise = Promise<string>.PromiseWithAction(() => "1")
+                var promise = Promise.WithAction(() => "1")
                     .Then(result => result + "2")
                     .Then(result => result + "3")
                     .Then(result => result + "4");
@@ -97,7 +97,7 @@ class describe_Then : nspec {
             };
 
             it["calculates correct progress"] = () => {
-                var promise = Promise<string>.PromiseWithAction(() => {
+                var promise = Promise.WithAction(() => {
                     Thread.Sleep(delay);
                     return "1";
                 }).Then(result => result + "2")

@@ -13,8 +13,7 @@ public class RecueProgressController : MonoBehaviour {
     }
 
     Promise<int> getTenPromises() {
-        var promise = Promise<int>
-            .PromiseWithAction(() => {
+        var promise = Promise.WithAction<int>(() => {
             Thread.Sleep(500);
             throw new Exception();
         }).Rescue(arg => 0);

@@ -19,7 +19,7 @@ public class DeferredProgressController : MonoBehaviour {
     Promise<int>customProgressPromise(bool autoStart = false) {
         var deferred = new Deferred<int>();
         deferred.action = () => {
-            Thread.Sleep(1000);
+            Thread.Sleep(500);
             var progress = 0f;
             while (progress < 1f) {
                 progress += 0.01f;
