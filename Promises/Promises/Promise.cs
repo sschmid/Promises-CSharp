@@ -20,6 +20,11 @@ namespace Promises {
             var results = new object[promises.Length];
             var done = 0;
 
+            var initialProgress = 0f;
+            foreach (var p in promises)
+                initialProgress += p.progress;
+            deferred.Progress(initialProgress / (float)promises.Length);
+
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
                 var localIndex = i;
                 var promise = promises[localIndex];
@@ -30,7 +35,7 @@ namespace Promises {
                         deferred.Fulfill(results);
                 };
                 promise.OnFailed += deferred.Fail;
-                promise.OnProgressed += progress =>  {
+                promise.OnProgressed += progress => {
                     var totalProgress = 0f;
                     foreach (var p in promises)
                         totalProgress += p.progress;
@@ -44,6 +49,13 @@ namespace Promises {
         public static Promise<T> Any<T>(params Promise<T>[] promises) {
             var deferred = new Deferred<T>();
             var failed = 0;
+
+            var initialProgress = 0f;
+            foreach (var p in promises)
+                if (p.progress > initialProgress)
+                    initialProgress += p.progress;
+            deferred.Progress(initialProgress);
+
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
                 var localIndex = i;
                 var promise = promises[localIndex];
@@ -62,12 +74,11 @@ namespace Promises {
                             deferred.Fail(new Exception());
                     }
                 };
-                promise.OnProgressed += progress =>  {
+                promise.OnProgressed += progress => {
                     var maxProgress = 0f;
-                    foreach (var p in promises) {
+                    foreach (var p in promises)
                         if (p.progress > maxProgress)
                             maxProgress += p.progress;
-                    }
                     deferred.Progress(maxProgress);
                 };
             }
@@ -79,6 +90,11 @@ namespace Promises {
             var deferred = new Deferred<object[]>();
             var results = new object[promises.Length];
             var done = 0;
+
+            var initialProgress = 0f;
+            foreach (var p in promises)
+                initialProgress += p.progress;
+            deferred.Progress(initialProgress / (float)promises.Length);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
                 var localIndex = i;
@@ -92,18 +108,13 @@ namespace Promises {
                 promise.OnFailed += error => {
                     done++;
                     var totalProgress = 0f;
-                    foreach (var p in promises) {
-                        if (p.state == PromiseState.Failed)
-                            totalProgress += 1f;
-                        else
-                            totalProgress += p.progress;
-                    }
+                    foreach (var p in promises)
+                        totalProgress += p.state == PromiseState.Failed ? 1f : p.progress;
                     deferred.Progress(totalProgress / (float)promisesLength);
-
                     if (done == promisesLength)
                         deferred.Fulfill(results);
                 };
-                promise.OnProgressed += progress =>  {
+                promise.OnProgressed += progress => {
                     var totalProgress = 0f;
                     foreach (var p in promises)
                         totalProgress += p.progress;
@@ -174,6 +185,8 @@ namespace Promises {
             var deferred = (Deferred<TThen>)promise;
             deferred._depth = _depth + 1;
             deferred._fraction = 1f / deferred._depth;
+            deferred._bias = (float)_depth / (float)deferred._depth * _progress;
+            deferred.Progress(0);
 
             // Unity workaround. For unknown reasons, Unity won't compile using OnFulfilled += ..., OnFailed += ... or OnProgressed += ...
             addOnFulfilled(result => deferred.RunAsync());
@@ -190,8 +203,20 @@ namespace Promises {
             deferred.action = () => action(error);
             deferred._depth = _depth;
             deferred._fraction = 1f;
+            deferred.Progress(_progress);
             addOnFulfilled(deferred.Fulfill);
             addOnFailed(error => deferred.RunAsync());
+            addOnProgress(deferred.Progress);
+            return deferred.promise;
+        }
+
+        public Promise<TWrap> Wrap<TWrap>() {
+            var deferred = new Deferred<TWrap>();
+            deferred._depth = _depth;
+            deferred._fraction = 1f;
+            deferred.Progress(_progress);
+            addOnFulfilled(result => deferred.Fulfill((TWrap)(object)result));
+            addOnFailed(deferred.Fail);
             addOnProgress(deferred.Progress);
             return deferred.promise;
         }

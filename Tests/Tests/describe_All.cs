@@ -38,6 +38,16 @@ class describe_All : nspec {
                 eventProgresses[0].should_be(0.5f);
                 eventProgresses[1].should_be(1f);
             };
+
+            it["has initial progress"] = () => {
+                var deferred = new Deferred<object>();
+                deferred.Progress(0.5f);
+                p2 = TestHelper.PromiseWithResult<object>("42", 2 * delay);
+                promise = Promise.All(deferred, p2);
+                promise.progress.should_be(0.25f);
+                deferred.Fulfill(null);
+                promise.Await();
+            };
         };
 
         context["when a promise fails"] = () => {

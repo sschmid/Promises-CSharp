@@ -7,13 +7,13 @@ using System.Collections.Generic;
 public class AnyProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getAnyPromise();
+        var promise = GetAnyPromise();
         var wrapper = PromiseWrapper.Wrap(promise, "Any");
         wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
         wrapper.OnFulfilled += result => new GameObject("Any done");
     }
 
-    Promise<int> getAnyPromise() {
+    public static Promise<int> GetAnyPromise() {
         var promises = new List<Promise<int>>();
         for (int i = 0; i < 10; i++) {
             var localIndex = i + 1;

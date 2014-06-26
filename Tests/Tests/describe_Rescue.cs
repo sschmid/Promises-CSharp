@@ -46,6 +46,7 @@ class describe_Rescue : nspec {
                 eventProgress = 0f;
                 progressCalled = 0;
                 deferred = new Deferred<string>();
+                deferred.Progress(0.1f);
                 promise = deferred.Rescue(error => "43");
                 promise.OnProgressed += progress => {
                     eventProgress = progress;
@@ -61,6 +62,11 @@ class describe_Rescue : nspec {
                 eventProgress.should_be(1f);
                 promise.progress.should_be(1f);
                 progressCalled.should_be(3);
+            };
+
+            it["has initial progress"] = () => {
+                promise.progress.should_be(0.1f);
+                deferred.Fulfill("42");
             };
         };
 

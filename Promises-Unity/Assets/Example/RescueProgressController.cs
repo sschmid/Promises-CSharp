@@ -3,16 +3,16 @@ using Promises;
 using System.Threading;
 using System;
 
-public class RecueProgressController : MonoBehaviour {
+public class RescueProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getRescuePromise();
+        var promise = GetRescuePromise();
         var wrapper = PromiseWrapper.Wrap(promise, "Rescue");
         wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
         wrapper.OnFulfilled += result => new GameObject("Rescue done");
     }
 
-    Promise<int> getRescuePromise() {
+    public static Promise<int> GetRescuePromise() {
         var promise = Promise.WithAction<int>(() => {
             Thread.Sleep(500);
             throw new Exception();
@@ -24,7 +24,7 @@ public class RecueProgressController : MonoBehaviour {
         return promise;
     }
 
-    int sleepAction(int result) {
+    static int sleepAction(int result) {
         Thread.Sleep(500);
         throw new Exception();
     }

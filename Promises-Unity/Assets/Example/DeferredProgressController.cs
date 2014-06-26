@@ -6,17 +6,17 @@ using System.Threading;
 public class DeferredProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getDeferred();
+        var promise = GetDeferred();
         var wrapper = PromiseWrapper.Wrap(promise, "Deferred");
         wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
         wrapper.OnFulfilled += result => new GameObject("Deferred done");
     }
 
-    Promise<int> getDeferred() {
+    public static Promise<int> GetDeferred() {
         return customProgressPromise(true).Then(customProgressPromise()).Then(customProgressPromise()).Then(customProgressPromise());
     }
 
-    Promise<int>customProgressPromise(bool autoStart = false) {
+    static Promise<int>customProgressPromise(bool autoStart = false) {
         var deferred = new Deferred<int>();
         deferred.action = () => {
             Thread.Sleep(500);

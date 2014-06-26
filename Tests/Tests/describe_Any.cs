@@ -1,6 +1,5 @@
 ﻿using NSpec;
 using Promises;
-using NUnit.Framework;
 using System.Collections.Generic;
 
 class describe_Any : nspec {
@@ -40,6 +39,16 @@ class describe_Any : nspec {
                 it["calculates progress of promise with highest progress"] = () => {
                     eventProgresses.Count.should_be(1);
                     eventProgresses[0].should_be(1f);
+                };
+
+                it["has initial max progress"] = () => {
+                    var deferred = new Deferred<object>();
+                    deferred.Progress(0.5f);
+                    var p = TestHelper.PromiseWithResult<object>("42", delay * 2);
+                    var any = Promise.Any(deferred, p);
+                    any.progress.should_be(0.5f);
+                    deferred.Fulfill(null);
+                    any.Await();
                 };
             };
         };

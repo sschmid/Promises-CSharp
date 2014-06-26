@@ -37,6 +37,16 @@ class describe_Collect : nspec {
                 eventProgresses[0].should_be(0.5f);
                 eventProgresses[1].should_be(1f);
             };
+
+            it["has initial progress"] = () => {
+                var deferred = new Deferred<object>();
+                deferred.Progress(0.5f);
+                p2 = TestHelper.PromiseWithResult<object>("42", delay);
+                var collect = Promise.Collect(deferred, p2);
+                collect.progress.should_be(0.25f);
+                deferred.Fulfill(null);
+                collect.Await();
+            };
         };
 
         context["when all promises fail"] = () => {

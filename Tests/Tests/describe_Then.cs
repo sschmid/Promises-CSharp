@@ -116,6 +116,15 @@ class describe_Then : nspec {
                 eventCalled.should_be(expectedProgresses.Length - 1);
             };
 
+            it["has initial progress"] = () => {
+                var deferred = new Deferred<string>();
+                deferred.Progress(0.5f);
+                var then = deferred.promise.Then(result => 0);
+                then.progress.should_be(0.25f);
+                deferred.Fulfill(null);
+                then.Await();
+            };
+
             it["calculates correct progress with custum progress"] = () => {
                 var deferred1 = new Deferred<int>();
                 deferred1.action = () => {

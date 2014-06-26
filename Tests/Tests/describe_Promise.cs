@@ -213,6 +213,44 @@ class describe_Promise : nspec {
             };
         };
 
+        context["wrap"] = () => {
+
+            Promise<object> wrapped = null;
+
+            context["when wrapped promise fulfills"] = () => {
+                before = () => {
+                };
+
+                it["forwards fulfill"] = () => {
+                    promise = TestHelper.PromiseWithResult("42", delay);
+                    wrapped = promise.Wrap<object>();
+                    wrapped.Await();
+                    wrapped.state.should_be(PromiseState.Fulfilled);
+                };
+
+                it["forwards fail"] = () => {
+                    promise = TestHelper.PromiseWithError<string>("error 42", delay);
+                    wrapped = promise.Wrap<object>();
+                    wrapped.Await();
+                    wrapped.state.should_be(PromiseState.Failed);
+                };
+
+                it["forwards progress"] = () => {
+                    var deferred = new Deferred<string>();
+                    wrapped = deferred.Wrap<object>();
+                    deferred.Progress(0.5f);
+                    wrapped.progress.should_be(0.5f);
+                };
+
+                it["has initial progress"] = () => {
+                    var deferred = new Deferred<string>();
+                    deferred.Progress(0.5f);
+                    wrapped = deferred.Wrap<object>();
+                    wrapped.progress.should_be(0.5f);
+                };
+            };
+        };
+
         context["toString"] = () => {
             it["returns description of unfulfilled promise"] = () => {
                 var deferred = new Deferred<string>();
