@@ -29,10 +29,6 @@ class describe_Any : nspec {
 
             it["is fulfilled"] = () => promise.state.should_be(PromiseState.Fulfilled);
             it["first promise to be complete is fulfilled"] = () => p2.state.should_be(PromiseState.Fulfilled);
-            it["all others get cancelled"] = () => {
-                p1.state.should_be(PromiseState.Failed);
-                p3.state.should_be(PromiseState.Failed);
-            };
             it["has result of first complete promise"] = () => promise.result.should_be("42");
 
             context["progress"] = () => {

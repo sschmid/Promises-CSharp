@@ -60,12 +60,8 @@ namespace Promises {
                 var localIndex = i;
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
-                    if (deferred.state == PromiseState.Unfulfilled) {
+                    if (deferred.state == PromiseState.Unfulfilled)
                         deferred.Fulfill(result);
-                        foreach (var p in promises)
-                            if (p != promise)
-                                p.Cancel();
-                    }
                 };
                 promise.OnFailed += error => {
                     if (deferred.state == PromiseState.Unfulfilled) {
@@ -168,11 +164,6 @@ namespace Promises {
 
         public void Await() {
             while (_state == PromiseState.Unfulfilled || _thread != null);
-        }
-
-        public void Cancel() {
-            if (_thread != null)
-                _thread.Abort();
         }
 
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {

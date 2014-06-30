@@ -71,16 +71,6 @@ class describe_Promise : nspec {
                 it["doesn't call OnProgress"] = () => progressCalled.should_be_false();
             };
 
-            context["cancel"] = () => {
-                before = () => {
-                    promise.Cancel();
-                    promise.Await();
-                };
-                it["fails running promise"] = () => promise.state.should_be(PromiseState.Failed);
-                it["has no result"] = () => promise.result.should_be_null();
-                it["has no error"] = () => promise.error.should_not_be_null();
-            };
-
             context["when action finished"] = () => {
 
                 before = () => promise.Await();
@@ -105,18 +95,6 @@ class describe_Promise : nspec {
                         called.should_be_false();
                     };
                     it["calls OnProgress"] = () => eventProgress.should_be(1f);
-                };
-
-                context["cancel"] = () => {
-                    before = () => {
-                        Thread.Sleep(3);
-                        promise.Cancel();
-                        promise.Await();
-                    };
-                    it["does nothing"] = () => promise.state.should_be(PromiseState.Fulfilled);
-                    it["has progressed 100%"] = () => promise.progress.should_be(1f);
-                    it["has result"] = () => promise.result.should_be("42");
-                    it["has no error"] = () => promise.error.should_be_null();
                 };
             };
         };
