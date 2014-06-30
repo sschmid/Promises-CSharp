@@ -19,11 +19,11 @@ public class PromiseWrapper : MonoBehaviour {
 
     public static PromiseWrapper Wrap<T>(Promise<T> promise, string name = "Promise") {
         var wrapper = new GameObject(name).AddComponent<PromiseWrapper>();
-        wrapper.init(promise);
+        wrapper.init(promise.Wrap<object>());
         return wrapper;
     }
 
-    void init<T>(Promise<T> promise) {
+    void init(Promise<object> promise) {
         promise.OnFulfilled += result => _result = result;
         promise.OnFailed += error => _error = error;
         promise.OnProgressed += progress => {
