@@ -29,17 +29,23 @@ namespace Promises {
                 var localIndex = i;
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
-                    results[localIndex] = result;
-                    done++;
-                    if (done == promisesLength)
-                        deferred.Fulfill(results);
+                    if (deferred.state == PromiseState.Unfulfilled) {
+                        results[localIndex] = result;
+                        if (++done == promisesLength)
+                            deferred.Fulfill(results);
+                    }
                 };
-                promise.OnFailed += deferred.Fail;
+                promise.OnFailed += error => {
+                    if (deferred.state == PromiseState.Unfulfilled)
+                        deferred.Fail(error);
+                };
                 promise.OnProgressed += progress => {
-                    var totalProgress = 0f;
-                    foreach (var p in promises)
-                        totalProgress += p.progress;
-                    deferred.Progress(totalProgress / (float)promisesLength);
+                    if (deferred.state == PromiseState.Unfulfilled) {
+                        var totalProgress = 0f;
+                        foreach (var p in promises)
+                            totalProgress += p.progress;
+                        deferred.Progress(totalProgress / (float)promisesLength);
+                    }
                 };
             }
 
@@ -53,7 +59,7 @@ namespace Promises {
             var initialProgress = 0f;
             foreach (var p in promises)
                 if (p.progress > initialProgress)
-                    initialProgress += p.progress;
+                    initialProgress = p.progress;
             deferred.Progress(initialProgress);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -65,17 +71,18 @@ namespace Promises {
                 };
                 promise.OnFailed += error => {
                     if (deferred.state == PromiseState.Unfulfilled) {
-                        failed++;
-                        if (failed == promisesLength)
-                            deferred.Fail(new Exception());
+                        if (++failed == promisesLength)
+                            deferred.Fail(new PromiseAnyException());
                     }
                 };
                 promise.OnProgressed += progress => {
-                    var maxProgress = 0f;
-                    foreach (var p in promises)
-                        if (p.progress > maxProgress)
-                            maxProgress += p.progress;
-                    deferred.Progress(maxProgress);
+                    if (deferred.state == PromiseState.Unfulfilled) {
+                        var maxProgress = 0f;
+                        foreach (var p in promises)
+                            if (p.progress > maxProgress)
+                                maxProgress = p.progress;
+                        deferred.Progress(maxProgress);
+                    }
                 };
             }
 
@@ -97,17 +104,15 @@ namespace Promises {
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
                     results[localIndex] = result;
-                    done++;
-                    if (done == promisesLength)
+                    if (++done == promisesLength)
                         deferred.Fulfill(results);
                 };
                 promise.OnFailed += error => {
-                    done++;
                     var totalProgress = 0f;
                     foreach (var p in promises)
                         totalProgress += p.state == PromiseState.Failed ? 1f : p.progress;
                     deferred.Progress(totalProgress / (float)promisesLength);
-                    if (done == promisesLength)
+                    if (++done == promisesLength)
                         deferred.Fulfill(results);
                 };
                 promise.OnProgressed += progress => {
@@ -169,7 +174,7 @@ namespace Promises {
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {
             var deferred = new Deferred<TThen>();
             deferred.action = () => action(result);
-            return Then(deferred);
+            return Then(deferred.promise);
         }
 
         public Promise<TThen> Then<TThen>(Promise<TThen> promise) {

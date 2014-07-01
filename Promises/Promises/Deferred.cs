@@ -35,5 +35,10 @@ namespace Promises {
             setProgress(progress);
         }
     }
+
+    public class PromiseAnyException : Exception {
+        public PromiseAnyException() : base("All promises did fail!") {
+        }
+    }
 }
 
