@@ -6,10 +6,9 @@ using System;
 public class RescueProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = GetRescuePromise();
-        var wrapper = PromiseWrapper.Wrap(promise, "Rescue");
-        wrapper.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
-        wrapper.OnFulfilled += result => new GameObject("Rescue done");
+        var promise = GetRescuePromise().QueueOnMainThread();
+        promise.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
+        promise.OnFulfilled += result => new GameObject("Rescue done");
     }
 
     public static Promise<int> GetRescuePromise() {

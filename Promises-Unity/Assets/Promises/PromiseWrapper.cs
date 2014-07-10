@@ -2,6 +2,12 @@
 using Promises;
 using System;
 
+public static class PromiseWrapperExtension {
+    public static PromiseWrapper QueueOnMainThread<T>(this Promise<T> promise) {
+        return PromiseWrapper.Wrap(promise);
+    }
+}
+
 public class PromiseWrapper : MonoBehaviour {
 
     public event Fulfilled OnFulfilled;
