@@ -9,19 +9,19 @@ namespace Promises {
         Fulfilled
     }
 
-    public static class Promise {
-        public static Promise<T> WithAction<T>(Func<T> action) {
-            var deferred = new Deferred<T>();
-            deferred.action = action;
-            return deferred.RunAsync();
-        }
+	public static class Promise {
+		public static Promise<T> WithAction<T>(Func<T> action) {
+			var deferred = new Deferred<T>();
+			deferred.action = action;
+			return deferred.RunAsync();
+		}
 
 		public static Promise<T> WithCoroutine<T> (IEnumerator coroutine) {
 			var deferred = new Deferred<T>();
 			return deferred.RunAsync(coroutine);
 		}
 
-        public static Promise<object[]> All(params Promise<object>[] promises) {
+		public static Promise<object[]> All(params Promise<object>[] promises) {
             var deferred = new Deferred<object[]>();
             var results = new object[promises.Length];
             var done = 0;
