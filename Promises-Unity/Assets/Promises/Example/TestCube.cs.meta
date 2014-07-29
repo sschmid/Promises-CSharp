@@ -1,5 +1,7 @@
 fileFormatVersion: 2
 guid: 31a07e52e9392412fb0c7944d1335ad0
+labels:
+- wgpod_Promises
 MonoImporter:
   serializedVersion: 2
   defaultReferences: []
