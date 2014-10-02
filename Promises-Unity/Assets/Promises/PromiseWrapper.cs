@@ -10,14 +10,30 @@ public static class PromiseWrapperExtension {
 
 public class PromiseWrapper : MonoBehaviour {
 
-    public event Fulfilled OnFulfilled;
-    public event Failed OnFailed;
-    public event Progressed OnProgressed;
+    public event Fulfilled OnFulfilled {
+        add { addOnFulfilled(value); }
+        remove { _onFulfilled -= value; }
+    }
+
+    public event Failed OnFailed {
+        add { addOnFailed(value); }
+        remove { _onFailed -= value; }
+    }
+
+    public event Progressed OnProgressed {
+        add { addOnProgress(value); }
+        remove { _onProgressed -= value; }
+    }
 
     public delegate void Fulfilled(object result);
     public delegate void Failed(Exception error);
     public delegate void Progressed(float progress);
 
+    event Fulfilled _onFulfilled;
+    event Failed _onFailed;
+    event Progressed _onProgressed;
+
+    Promise<object> _promise;
     object _result;
     Exception _error;
     float _progress;
@@ -30,6 +46,7 @@ public class PromiseWrapper : MonoBehaviour {
     }
 
     void init(Promise<object> promise) {
+        _promise = promise;
         promise.OnFulfilled += result => _result = result;
         promise.OnFailed += error => _error = error;
         promise.OnProgressed += progress => {
@@ -38,28 +55,49 @@ public class PromiseWrapper : MonoBehaviour {
         };
     }
 
+    void addOnFulfilled(Fulfilled value) {
+        if (_promise.state == PromiseState.Unfulfilled)
+            _onFulfilled += value;
+        else if (_promise.state == PromiseState.Fulfilled)
+            value(_result);
+    }
+
+    void addOnFailed(Failed value) {
+        if (_promise.state == PromiseState.Unfulfilled)
+            _onFailed += value;
+        else if (_promise.state == PromiseState.Failed)
+            value(_error);
+    }
+
+    void addOnProgress(Progressed value) {
+        if (_progress < 1f)
+            _onProgressed += value;
+        else
+            value(_progress);
+    }
+
     void Update() {
         if (_updateProgress) {
             _updateProgress = false;
-            if (OnProgressed != null)
-                OnProgressed(_progress);
+            if (_onProgressed != null)
+                _onProgressed(_progress);
         }
         if (_result != null) {
-            if (OnFulfilled != null)
-                OnFulfilled(_result);
+            if (_onFulfilled != null)
+                _onFulfilled(_result);
             cleanup();
         }
         if (_error != null) {
-            if (OnFailed != null)
-                OnFailed(_error);
+            if (_onFailed != null)
+                _onFailed(_error);
             cleanup();
         }
     }
 
     void cleanup() {
-        OnFulfilled = null;
-        OnFailed = null;
-        OnProgressed = null;
+        _onFulfilled = null;
+        _onFailed = null;
+        _onProgressed = null;
         Destroy(gameObject);
     }
 }
