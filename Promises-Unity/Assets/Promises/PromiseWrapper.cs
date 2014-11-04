@@ -35,6 +35,7 @@ public class PromiseWrapper : MonoBehaviour {
 
     Promise<object> _promise;
     object _result;
+    bool _resultRetrieved;
     Exception _error;
     float _progress;
     bool _updateProgress;
@@ -47,7 +48,10 @@ public class PromiseWrapper : MonoBehaviour {
 
     void init(Promise<object> promise) {
         _promise = promise;
-        promise.OnFulfilled += result => _result = result;
+        promise.OnFulfilled += result => {
+            _resultRetrieved = true;
+            _result = result;
+        };
         promise.OnFailed += error => _error = error;
         promise.OnProgressed += progress => {
             _progress = progress;
@@ -56,40 +60,46 @@ public class PromiseWrapper : MonoBehaviour {
     }
 
     void addOnFulfilled(Fulfilled value) {
-        if (_promise.state == PromiseState.Unfulfilled)
+        if (_promise.state == PromiseState.Unfulfilled) {
             _onFulfilled += value;
-        else if (_promise.state == PromiseState.Fulfilled)
+        } else if (_promise.state == PromiseState.Fulfilled) {
             value(_result);
+        }
     }
 
     void addOnFailed(Failed value) {
-        if (_promise.state == PromiseState.Unfulfilled)
+        if (_promise.state == PromiseState.Unfulfilled) {
             _onFailed += value;
-        else if (_promise.state == PromiseState.Failed)
+        } else if (_promise.state == PromiseState.Failed) {
             value(_error);
+        }
     }
 
     void addOnProgress(Progressed value) {
-        if (_progress < 1f)
+        if (_progress < 1f) {
             _onProgressed += value;
-        else
+        } else {
             value(_progress);
+        }
     }
 
     void Update() {
         if (_updateProgress) {
             _updateProgress = false;
-            if (_onProgressed != null)
+            if (_onProgressed != null) {
                 _onProgressed(_progress);
+            }
         }
-        if (_result != null) {
-            if (_onFulfilled != null)
+        if (_resultRetrieved) {
+            if (_onFulfilled != null) {
                 _onFulfilled(_result);
+            }
             cleanup();
         }
         if (_error != null) {
-            if (_onFailed != null)
+            if (_onFailed != null) {
                 _onFailed(_error);
+            }
             cleanup();
         }
     }
