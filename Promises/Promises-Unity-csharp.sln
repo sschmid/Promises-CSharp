@@ -1,9 +1,7 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Promises", "Promises\Promises.csproj", "{4B3573BB-399A-45CA-A0ED-F47748F1062E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{A9F2C1D6-19B1-4B88-95B2-B95585DC2873}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{13E5DD6E-461E-4BF0-134D-65EC3837F53E}") = "Promises-Unity", "Assembly-CSharp-vs.csproj", "{FD90446E-9934-6321-E8FD-1F8C04570963}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,53 +9,52 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4B3573BB-399A-45CA-A0ED-F47748F1062E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4B3573BB-399A-45CA-A0ED-F47748F1062E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4B3573BB-399A-45CA-A0ED-F47748F1062E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4B3573BB-399A-45CA-A0ED-F47748F1062E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A9F2C1D6-19B1-4B88-95B2-B95585DC2873}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A9F2C1D6-19B1-4B88-95B2-B95585DC2873}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A9F2C1D6-19B1-4B88-95B2-B95585DC2873}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A9F2C1D6-19B1-4B88-95B2-B95585DC2873}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD90446E-9934-6321-E8FD-1F8C04570963}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD90446E-9934-6321-E8FD-1F8C04570963}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD90446E-9934-6321-E8FD-1F8C04570963}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD90446E-9934-6321-E8FD-1F8C04570963}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Promises\Promises.csproj
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+																																																																																																																																												GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
 		Policies = $0
-		$0.DotNetNamingPolicy = $1
-		$1.DirectoryNamespaceAssociation = None
-		$1.ResourceNamePolicy = FileName
-		$0.TextStylePolicy = $2
-		$2.inheritsSet = VisualStudio
-		$2.inheritsScope = text/plain
+		$0.TextStylePolicy = $1
+		$1.inheritsSet = VisualStudio
+		$1.inheritsScope = text/plain
+		$1.scope = text/x-csharp
+		$0.CSharpFormattingPolicy = $2
+		$2.IndentSwitchBody = True
+		$2.AutoPropertyFormatting = ForceOneLine
+		$2.NamespaceBraceStyle = EndOfLine
+		$2.ClassBraceStyle = EndOfLine
+		$2.InterfaceBraceStyle = EndOfLine
+		$2.StructBraceStyle = EndOfLine
+		$2.EnumBraceStyle = EndOfLine
+		$2.MethodBraceStyle = EndOfLine
+		$2.ConstructorBraceStyle = EndOfLine
+		$2.DestructorBraceStyle = EndOfLine
+		$2.BeforeMethodDeclarationParentheses = False
+		$2.BeforeMethodCallParentheses = False
+		$2.BeforeConstructorDeclarationParentheses = False
+		$2.BeforeIndexerDeclarationBracket = False
+		$2.BeforeDelegateDeclarationParentheses = False
+		$2.AfterDelegateDeclarationParameterComma = True
+		$2.NewParentheses = False
+		$2.SpacesBeforeBrackets = False
+		$2.BlankLinesBeforeUsings = 1
+		$2.AlignToFirstIndexerDeclarationParameter = False
+		$2.inheritsSet = Mono
+		$2.inheritsScope = text/x-csharp
 		$2.scope = text/x-csharp
-		$0.CSharpFormattingPolicy = $3
-		$3.IndentSwitchBody = True
-		$3.AutoPropertyFormatting = ForceOneLine
-		$3.NamespaceBraceStyle = EndOfLine
-		$3.ClassBraceStyle = EndOfLine
-		$3.InterfaceBraceStyle = EndOfLine
-		$3.StructBraceStyle = EndOfLine
-		$3.EnumBraceStyle = EndOfLine
-		$3.MethodBraceStyle = EndOfLine
-		$3.ConstructorBraceStyle = EndOfLine
-		$3.DestructorBraceStyle = EndOfLine
-		$3.BeforeMethodDeclarationParentheses = False
-		$3.BeforeMethodCallParentheses = False
-		$3.BeforeConstructorDeclarationParentheses = False
-		$3.BeforeIndexerDeclarationBracket = False
-		$3.BeforeDelegateDeclarationParentheses = False
-		$3.AfterDelegateDeclarationParameterComma = True
-		$3.NewParentheses = False
-		$3.SpacesBeforeBrackets = False
-		$3.BlankLinesBeforeUsings = 1
-		$3.AlignToFirstIndexerDeclarationParameter = False
-		$3.inheritsSet = Mono
-		$3.inheritsScope = text/x-csharp
-		$3.scope = text/x-csharp
-		$0.TextStylePolicy = $4
-		$4.inheritsSet = VisualStudio
-		$4.inheritsScope = text/plain
-		$4.scope = text/plain
+		$0.TextStylePolicy = $3
+		$3.inheritsSet = VisualStudio
+		$3.inheritsScope = text/plain
+		$3.scope = text/plain
+		$0.DotNetNamingPolicy = $4
+		$4.DirectoryNamespaceAssociation = None
+		$4.ResourceNamePolicy = FileName
 		$0.StandardHeader = $5
 		$5.Text = 
 		$5.IncludeInNewFiles = True
@@ -218,4 +215,5 @@ Global
 		$34.IncludeInstanceMembers = True
 		$34.IncludeStaticEntities = True
 	EndGlobalSection
+
 EndGlobal

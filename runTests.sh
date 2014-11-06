@@ -1,5 +1,5 @@
 #!/bin/sh
-xbuild Promises.sln /verbosity:minimal
+xbuild Tests/Tests.sln /verbosity:minimal
 if [ $? = 0 ]
 then
 	mono Tests/Libraries/nspec/NSpecRunner.exe Tests/bin/Debug/Tests.dll

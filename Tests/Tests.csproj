@@ -7,6 +7,8 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Tests</RootNamespace>
     <AssemblyName>Tests</AssemblyName>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,12 +49,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\Promises\Promises.csproj">
-      <Project>{4B3573BB-399A-45CA-A0ED-F47748F1062E}</Project>
-      <Name>Promises</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Folder Include="Libraries\" />
     <Folder Include="Tests\" />
   </ItemGroup>
@@ -64,5 +60,11 @@
     <None Include="Libraries\nspec\NSpecRunner.exe.config" />
     <None Include="Libraries\nspec\NSpecRunner.exe.mdb" />
     <None Include="Libraries\nspec\Domain\Formatters\Templates\TiddlyWiki_Template.html" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Promises\Assembly-CSharp.csproj">
+      <Project>{078E3FFF-5273-27E8-12B5-6C83568FAB85}</Project>
+      <Name>Assembly-CSharp</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

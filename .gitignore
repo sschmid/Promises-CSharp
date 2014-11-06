@@ -20,12 +20,3 @@ InspectorExpandedItems.asset
 ScriptAssemblies/
 CurrentLayout.dwlt
 *.unityproj
-
-Promises/Promises/Deferred.cs.meta
-Promises/Promises/Promise.cs.meta
-Promises-Unity/Assembly-CSharp-vs.csproj
-Promises-Unity/Assembly-CSharp.csproj
-Promises-Unity/Promises-Unity-csharp.sln
-Promises-Unity/Promises-Unity.sln
-Promises-Unity/Assets/Libraries/Promises
-Promises-Unity/Assets/Libraries/Promises.meta
