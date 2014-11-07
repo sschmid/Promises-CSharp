@@ -57,6 +57,9 @@
      <Compile Include="Assets\Promises\Deferred.cs" />
      <Compile Include="Assets\Promises\Promise.cs" />
      <Compile Include="Assets\Promises\PromiseService.cs" />
+     <Compile Include="Assets\Tests\Interation Tests\PromiseOnFailedCalledTest.cs" />
+     <Compile Include="Assets\Tests\Interation Tests\PromiseOnFulfilledCalledTest.cs" />
+     <Compile Include="Assets\Tests\Interation Tests\PromiseOnProgressedCalledTest.cs" />
      <Compile Include="Assets\UnityTestTools\Assertions\AssertionComponent.cs" />
      <Compile Include="Assets\UnityTestTools\Assertions\AssertionException.cs" />
      <Compile Include="Assets\UnityTestTools\Assertions\Assertions.cs" />

@@ -20,19 +20,6 @@ class PromiseTests {
         Assert.AreSame(p, p.QueueOnMainThread(null));
     }
 
-//    [Test]
-//    public void calls_fulfilled_when_fulfilled() {
-//        var p = Promise.WithAction(() => {
-//            sleepShort();
-//            return 42;
-//        });
-//
-//        var result = 0;
-//        p.QueueOnMainThread(r => result = r);
-//        sleepLong();
-//        Assert.AreEqual(42, result);
-//    }
-
     [Test]
     public void fulfilled_promise_calls_onFulfilled_immediately() {
         var p = Promise.WithAction(() => 42);

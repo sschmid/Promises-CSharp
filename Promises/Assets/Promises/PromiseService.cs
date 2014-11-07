@@ -13,7 +13,7 @@ public static class PromiseExtensions {
     }
 }
 
-class PromiseWithHanlder<T> {
+class PromiseWithHandler<T> {
     public float previousProgress;
 
     public Promise<T> promise { get { return _promise; } }
@@ -26,7 +26,7 @@ class PromiseWithHanlder<T> {
     readonly Promise<T>.Failed _onFailed;
     readonly Promise<T>.Progressed _onProgressed;
 
-    public PromiseWithHanlder(Promise<T> promise,
+    public PromiseWithHandler(Promise<T> promise,
                               Promise<T>.Fulfilled onFulfilled = null,
                               Promise<T>.Failed onFailed = null,
                               Promise<T>.Progressed onProgressed = null) {
@@ -77,7 +77,7 @@ public class PromiseService : MonoBehaviour {
         }
 
         if (fulfilledHandler != null || failedHandler != null || progressedHandler != null) {
-            getService().addPromiseWithHanlder(new PromiseWithHanlder<T>(
+            getService().addPromiseWithHandler(new PromiseWithHandler<T>(
                 promise, fulfilledHandler,
                 failedHandler, progressedHandler
             ));
@@ -93,13 +93,13 @@ public class PromiseService : MonoBehaviour {
         return _service;
     }
 
-    void addPromiseWithHanlder<T>(PromiseWithHanlder<T> promiseWithHanlder) {
+    void addPromiseWithHandler<T>(PromiseWithHandler<T> promiseWithHandler) {
         _promises++;
         updateName();
-        StartCoroutine(update(promiseWithHanlder));
+        StartCoroutine(update(promiseWithHandler));
     }
 
-    IEnumerator update<T>(PromiseWithHanlder<T> p) {
+    IEnumerator update<T>(PromiseWithHandler<T> p) {
         while (true) {
             if (p.onProgressed != null) {
                 if (p.promise.progress != p.previousProgress) {
