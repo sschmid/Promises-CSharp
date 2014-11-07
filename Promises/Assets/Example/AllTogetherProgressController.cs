@@ -6,9 +6,11 @@ using System;
 public class AllTogetherProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = getAllTogether().QueueOnMainThread();
-        promise.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
-        promise.OnFulfilled += result => new GameObject("All together done");
+        getAllTogether().QueueOnMainThread(
+            result => new GameObject("All together done"),
+            null,
+            progress => transform.localScale = new Vector3(progress * 10, 1f, 1f)
+        );
     }
 
     Promise<object[]> getAllTogether() {

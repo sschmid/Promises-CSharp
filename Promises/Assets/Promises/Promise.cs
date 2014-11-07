@@ -21,8 +21,9 @@ namespace Promises {
             var done = 0;
 
             var initialProgress = 0f;
-            foreach (var p in promises)
+            foreach (var p in promises) {
                 initialProgress += p.progress;
+            }
             deferred.Progress(initialProgress / (float)promises.Length);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -31,19 +32,22 @@ namespace Promises {
                 promise.OnFulfilled += result => {
                     if (deferred.state == PromiseState.Unfulfilled) {
                         results[localIndex] = result;
-                        if (++done == promisesLength)
+                        if (++done == promisesLength) {
                             deferred.Fulfill(results);
+                        }
                     }
                 };
                 promise.OnFailed += error => {
-                    if (deferred.state == PromiseState.Unfulfilled)
+                    if (deferred.state == PromiseState.Unfulfilled) {
                         deferred.Fail(error);
+                    }
                 };
                 promise.OnProgressed += progress => {
                     if (deferred.state == PromiseState.Unfulfilled) {
                         var totalProgress = 0f;
-                        foreach (var p in promises)
+                        foreach (var p in promises) {
                             totalProgress += p.progress;
+                        }
                         deferred.Progress(totalProgress / (float)promisesLength);
                     }
                 };
@@ -57,30 +61,36 @@ namespace Promises {
             var failed = 0;
 
             var initialProgress = 0f;
-            foreach (var p in promises)
-                if (p.progress > initialProgress)
+            foreach (var p in promises) {
+                if (p.progress > initialProgress) {
                     initialProgress = p.progress;
+                }
+            }
             deferred.Progress(initialProgress);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
                 var localIndex = i;
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
-                    if (deferred.state == PromiseState.Unfulfilled)
+                    if (deferred.state == PromiseState.Unfulfilled) {
                         deferred.Fulfill(result);
+                    }
                 };
                 promise.OnFailed += error => {
                     if (deferred.state == PromiseState.Unfulfilled) {
-                        if (++failed == promisesLength)
+                        if (++failed == promisesLength) {
                             deferred.Fail(new PromiseAnyException());
+                        }
                     }
                 };
                 promise.OnProgressed += progress => {
                     if (deferred.state == PromiseState.Unfulfilled) {
                         var maxProgress = 0f;
-                        foreach (var p in promises)
-                            if (p.progress > maxProgress)
+                        foreach (var p in promises) {
+                            if (p.progress > maxProgress) {
                                 maxProgress = p.progress;
+                            }
+                        }
                         deferred.Progress(maxProgress);
                     }
                 };
@@ -95,8 +105,9 @@ namespace Promises {
             var done = 0;
 
             var initialProgress = 0f;
-            foreach (var p in promises)
+            foreach (var p in promises) {
                 initialProgress += p.progress;
+            }
             deferred.Progress(initialProgress / (float)promises.Length);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -104,21 +115,25 @@ namespace Promises {
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
                     results[localIndex] = result;
-                    if (++done == promisesLength)
+                    if (++done == promisesLength) {
                         deferred.Fulfill(results);
+                    }
                 };
                 promise.OnFailed += error => {
                     var totalProgress = 0f;
-                    foreach (var p in promises)
+                    foreach (var p in promises) {
                         totalProgress += p.state == PromiseState.Failed ? 1f : p.progress;
+                    }
                     deferred.Progress(totalProgress / (float)promisesLength);
-                    if (++done == promisesLength)
+                    if (++done == promisesLength) {
                         deferred.Fulfill(results);
+                    }
                 };
                 promise.OnProgressed += progress => {
                     var totalProgress = 0f;
-                    foreach (var p in promises)
+                    foreach (var p in promises) {
                         totalProgress += p.progress;
+                    }
                     deferred.Progress(totalProgress / (float)promisesLength);
                 };
             }
@@ -218,44 +233,51 @@ namespace Promises {
         }
 
         public override string ToString() {
-            if (_state == PromiseState.Fulfilled)
+            if (_state == PromiseState.Fulfilled) {
                 return string.Format("[Promise<{0}>: state = {1}, result = {2}]", typeof(T).Name, _state, _result);
-            if (_state == PromiseState.Failed)
+            }
+            if (_state == PromiseState.Failed) {
                 return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}, error = {3}]", typeof(T).Name, _state, _progress, error.Message);
+            }
 
             return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}]", typeof(T).Name, _state, _progress);
         }
 
         void addOnFulfilled(Fulfilled value) {
-            if (_state == PromiseState.Unfulfilled)
+            if (_state == PromiseState.Unfulfilled) {
                 _onFulfilled += value;
-            else if (_state == PromiseState.Fulfilled)
+            } else if (_state == PromiseState.Fulfilled) {
                 value(_result);
+            }
         }
 
         void addOnFailed(Failed value) {
-            if (_state == PromiseState.Unfulfilled)
+            if (_state == PromiseState.Unfulfilled) {
                 _onFailed += value;
-            else if (_state == PromiseState.Failed)
+            } else if (_state == PromiseState.Failed) {
                 value(_error);
+            }
         }
 
         void addOnProgress(Progressed value) {
-            if (_progress < 1f)
+            if (_progress < 1f) {
                 _onProgressed += value;
-            else
+            } else {
                 value(_progress);
+            }
         }
 
         protected void transitionToState(PromiseState newState) {
             if (_state == PromiseState.Unfulfilled) {
                 _state = newState;
                 if (_state == PromiseState.Fulfilled) {
-                    if (_onFulfilled != null)
+                    if (_onFulfilled != null) {
                         _onFulfilled(_result);
+                    }
                 } else if (_state == PromiseState.Failed) {
-                    if (_onFailed != null)
+                    if (_onFailed != null) {
                         _onFailed(_error);
+                    }
                 }
             } else {
                 throw new Exception(string.Format("Invalid state transition from {0} to {1}", _state, newState));
@@ -268,8 +290,9 @@ namespace Promises {
             var newProgress = _bias + progress * _fraction;
             if (Math.Abs(newProgress - _progress) > float.Epsilon) {
                 _progress = newProgress;
-                if (_onProgressed != null)
+                if (_onProgressed != null) {
                     _onProgressed(_progress);
+                }
             }
         }
 

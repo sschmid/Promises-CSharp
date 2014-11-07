@@ -5,9 +5,11 @@ using System.Threading;
 public class ThenProgressController : MonoBehaviour {
     void Start() {
         transform.localScale = Vector3.zero;
-        var promise = GetTenWithThen().QueueOnMainThread();
-        promise.OnProgressed += progress => transform.localScale = new Vector3(progress * 10, 1f, 1f);
-        promise.OnFulfilled += result => new GameObject("Then done");
+        GetTenWithThen().QueueOnMainThread(
+            result => new GameObject("Then done"),
+            null,
+            progress => transform.localScale = new Vector3(progress * 10, 1f, 1f)
+        );
     }
 
     public static Promise<int> GetTenWithThen() {
@@ -16,8 +18,9 @@ public class ThenProgressController : MonoBehaviour {
             return 0;
         });
 
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < 9; i++) {
             promise = promise.Then<int>(sleepAction);
+        }
 
         return promise;
     }
