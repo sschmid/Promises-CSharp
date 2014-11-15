@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using System.Linq;
 
 namespace Promises {
     public enum PromiseState : byte {
@@ -20,10 +21,7 @@ namespace Promises {
             var results = new object[promises.Length];
             var done = 0;
 
-            var initialProgress = 0f;
-            foreach (var p in promises) {
-                initialProgress += p.progress;
-            }
+            var initialProgress = promises.Sum(p => p.progress);
             deferred.Progress(initialProgress / (float)promises.Length);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -44,10 +42,7 @@ namespace Promises {
                 };
                 promise.OnProgressed += progress => {
                     if (deferred.state == PromiseState.Unfulfilled) {
-                        var totalProgress = 0f;
-                        foreach (var p in promises) {
-                            totalProgress += p.progress;
-                        }
+                        var totalProgress = promises.Sum(p => p.progress);
                         deferred.Progress(totalProgress / (float)promisesLength);
                     }
                 };
@@ -60,12 +55,7 @@ namespace Promises {
             var deferred = new Deferred<T>();
             var failed = 0;
 
-            var initialProgress = 0f;
-            foreach (var p in promises) {
-                if (p.progress > initialProgress) {
-                    initialProgress = p.progress;
-                }
-            }
+            var initialProgress = promises.Max(p => p.progress);
             deferred.Progress(initialProgress);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -85,13 +75,7 @@ namespace Promises {
                 };
                 promise.OnProgressed += progress => {
                     if (deferred.state == PromiseState.Unfulfilled) {
-                        var maxProgress = 0f;
-                        foreach (var p in promises) {
-                            if (p.progress > maxProgress) {
-                                maxProgress = p.progress;
-                            }
-                        }
-                        deferred.Progress(maxProgress);
+                        deferred.Progress(promises.Max(p => p.progress));
                     }
                 };
             }
@@ -104,10 +88,7 @@ namespace Promises {
             var results = new object[promises.Length];
             var done = 0;
 
-            var initialProgress = 0f;
-            foreach (var p in promises) {
-                initialProgress += p.progress;
-            }
+            var initialProgress = promises.Sum(p => p.progress);
             deferred.Progress(initialProgress / (float)promises.Length);
 
             for (int i = 0, promisesLength = promises.Length; i < promisesLength; i++) {
@@ -120,20 +101,14 @@ namespace Promises {
                     }
                 };
                 promise.OnFailed += error => {
-                    var totalProgress = 0f;
-                    foreach (var p in promises) {
-                        totalProgress += p.state == PromiseState.Failed ? 1f : p.progress;
-                    }
+                    var totalProgress = promises.Sum(p => p.state == PromiseState.Failed ? 1f : p.progress);
                     deferred.Progress(totalProgress / (float)promisesLength);
                     if (++done == promisesLength) {
                         deferred.Fulfill(results);
                     }
                 };
                 promise.OnProgressed += progress => {
-                    var totalProgress = 0f;
-                    foreach (var p in promises) {
-                        totalProgress += p.progress;
-                    }
+                    var totalProgress = promises.Sum(p => p.state == PromiseState.Failed ? 1f : p.progress);
                     deferred.Progress(totalProgress / (float)promisesLength);
                 };
             }
