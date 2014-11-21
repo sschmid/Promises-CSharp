@@ -22,3 +22,7 @@ CurrentLayout.dwlt
 *.unityproj
 Promises/Assets/UnityTestTools
 UnityTestTools.meta
+Promises/Library/ShaderCache
+shadercompiler-64bit*
+ShaderCache.db
+Promises/Library/GiCache
