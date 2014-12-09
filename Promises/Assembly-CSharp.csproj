@@ -53,6 +53,7 @@
      <Compile Include="Assets\Example\DeferredProgressController.cs" />
      <Compile Include="Assets\Example\RescueProgressController.cs" />
      <Compile Include="Assets\Example\TestCube.cs" />
+     <Compile Include="Assets\Example\ThenCoroutineController.cs" />
      <Compile Include="Assets\Example\ThenProgressController.cs" />
      <Compile Include="Assets\Promises\Coroutine.cs" />
      <Compile Include="Assets\Promises\CoroutineRunner.cs" />

@@ -20,7 +20,8 @@ public class AllTogetherProgressController : MonoBehaviour {
         var deferred = DeferredProgressController.GetDeferred().Wrap<object>();
         var rescue = RescueProgressController.GetRescuePromise().Wrap<object>();
         var then = ThenProgressController.GetTenWithThen().Wrap<object>();
-        return Promise.Collect(all, any, collect, deferred, rescue, then);
+        var thenCoroutine = ThenCoroutineController.GetTenWithThenCoroutine().Wrap<object>();
+        return Promise.Collect(all, any, collect, deferred, rescue, then, thenCoroutine);
     }
 
     int sleepAction(int result) {
