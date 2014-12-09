@@ -6,22 +6,34 @@ public class TestPromiseRoutine : MonoBehaviour {
 	
 	void Start () 
 	{
-		var anotherPromise = Promise.WithCoroutine<object>(TestRoutine2("test"));
-		var promise = Promise.WithCoroutine<object>(TestRoutine());;
+		var anotherPromise = Promise.WithCoroutine<object>(TestRoutine2("TestWithAutoStart", 0.5f));
+		var lazyPromise = Promise.WithCoroutine<object>(TestRoutine2("Lazy", 2), false);
+		var promise = anotherPromise.Then<object>(lazyPromise);
 
-		var p = Promise.All(promise, anotherPromise);
-
-		p.OnFulfilled += HandleOnFulfilled2;
-		p.OnFailed += HandleOnFailed;
-
-		promise.OnFulfilled += HandleOnFulfilled;
-		promise.OnFailed += HandleOnFailed;
-
+		lazyPromise.OnFulfilled += HandleOnFulfilled1;
 		anotherPromise.OnFulfilled += HandleOnFulfilled1;
-		anotherPromise.OnFailed += HandleOnFailed;
 
-		var badPromise = Promise.WithCoroutine<string>(TestExceptionThrowing());
-		badPromise.OnFailed += HandleOnFailed;
+		lazyPromise.OnFailed += (error) => WoogaDebug.Log(error);
+		anotherPromise.OnFailed += (error) => WoogaDebug.Log(error);
+
+		promise.OnFulfilled += (result) => Debug.Log("sequence done");
+
+		promise.Stop();
+//		var promise = Promise.WithCoroutine<object>(TestRoutine());;
+//
+//		var p = Promise.All(promise, anotherPromise);
+//
+//		p.OnFulfilled += HandleOnFulfilled2;
+//		p.OnFailed += HandleOnFailed;
+//
+//		promise.OnFulfilled += HandleOnFulfilled;
+//		promise.OnFailed += HandleOnFailed;
+//
+//		anotherPromise.OnFulfilled += HandleOnFulfilled1;
+//		anotherPromise.OnFailed += HandleOnFailed;
+//
+//		var badPromise = Promise.WithCoroutine<string>(TestExceptionThrowing());
+//		badPromise.OnFailed += HandleOnFailed;
 	}
 
 	void HandleOnFulfilled2 (object[] result)
@@ -53,9 +65,10 @@ public class TestPromiseRoutine : MonoBehaviour {
 		yield return 20;
 	}
 
-	IEnumerator TestRoutine2 (string s)
+	IEnumerator TestRoutine2 (string s, float delay)
 	{
-		yield return new WaitForSeconds(0.1f);
+		yield return new WaitForSeconds(delay);
+		WoogaDebug.Log("TestRoutine running");
 		yield return (object)s.ToUpper();
 	}
 
