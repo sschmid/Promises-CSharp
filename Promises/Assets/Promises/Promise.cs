@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Threading;
+using System.Collections;
 using System.Linq;
+using System.Threading;
 
 namespace Promises {
     public enum PromiseState : byte {
@@ -13,6 +14,12 @@ namespace Promises {
         public static Promise<T> WithAction<T>(Func<T> action) {
             var deferred = new Deferred<T>();
             deferred.action = action;
+            return deferred.RunAsync();
+        }
+
+        public static Promise<T> WithCoroutine<T>(Func<IEnumerator> coroutine) {
+            var deferred = new Deferred<T>();
+            deferred.coroutine = coroutine;
             return deferred.RunAsync();
         }
 
@@ -167,6 +174,12 @@ namespace Promises {
             return Then(deferred.promise);
         }
 
+        public Promise<TThen> ThenCoroutine<TThen>(Func<T, IEnumerator> coroutine) {
+            var deferred = new Deferred<TThen>();
+            deferred.coroutine = () => coroutine(result);
+            return Then(deferred.promise);
+        }
+
         public Promise<TThen> Then<TThen>(Promise<TThen> promise) {
             var deferred = (Deferred<TThen>)promise;
             deferred._depth = _depth + 1;
@@ -185,15 +198,26 @@ namespace Promises {
         }
 
         public Promise<T> Rescue(Func<Exception, T> action) {
-            var deferred = new Deferred<T>();
+            var deferred = createDeferredRescue();
             deferred.action = () => action(error);
+            return deferred.promise;
+        }
+
+        public Promise<T> RescueCoroutine(Func<Exception, IEnumerator> coroutine) {
+            var deferred = createDeferredRescue();
+            deferred.coroutine = () => coroutine(error);
+            return deferred.promise;
+        }
+
+        Deferred<T> createDeferredRescue() {
+            var deferred = new Deferred<T>();
             deferred._depth = _depth;
             deferred._fraction = 1f;
             deferred.Progress(_progress);
             addOnFulfilled(deferred.Fulfill);
             addOnFailed(error => deferred.RunAsync());
             addOnProgress(deferred.Progress);
-            return deferred.promise;
+            return deferred;
         }
 
         public Promise<TWrap> Wrap<TWrap>() {

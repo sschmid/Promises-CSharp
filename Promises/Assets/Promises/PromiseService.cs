@@ -112,13 +112,13 @@ public class PromiseService : MonoBehaviour {
                 p.onFulfilled(p.promise.result);
                 _promises--;
                 updateName();
-                break;
+                yield break;
             }
             if (p.onFailed != null && p.promise.state == PromiseState.Failed) {
                 p.onFailed(p.promise.error);
                 _promises--;
                 updateName();
-                break;
+                yield break;
             }
 
             yield return new WaitForEndOfFrame();
