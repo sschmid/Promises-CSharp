@@ -27,6 +27,13 @@ namespace Promises
 			}
 			return instance.StartCoroutine<T>(coroutine, callback);
 		}
+
+		public static void StopRoutine (IEnumerator routine)
+		{
+			WoogaDebug.Log("StopRoutine");
+//			instance.StopAllCoroutines();
+			instance.Stop(routine);
+		}
 		
 		public Coroutine<T> StartCoroutine<T>(IEnumerator coroutine)
 		{
@@ -42,6 +49,11 @@ namespace Promises
 			StartCoroutine(CallbackRoutine<T>(coroutineObject, callback));
 			return coroutineObject;
 		}
+
+		public void Stop (IEnumerator coroutine)
+		{
+			StopCoroutine(coroutine);
+		}
 		
 		void Awake ()
 		{
@@ -51,7 +63,7 @@ namespace Promises
 		IEnumerator CallbackRoutine<T> (Coroutine<T> coroutine, Action<Coroutine<T>> callback)
 		{
 			yield return coroutine.coroutine;
-			callback(coroutine);
+			if (coroutine.IsRunning) callback(coroutine);
 		}
 	}
 }

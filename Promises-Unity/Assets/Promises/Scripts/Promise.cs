@@ -6,7 +6,8 @@ namespace Promises {
     public enum PromiseState : byte {
         Unfulfilled,
         Failed,
-        Fulfilled
+        Fulfilled,
+		Stopped
     }
 
 	public static class Promise {
@@ -16,9 +17,17 @@ namespace Promises {
 			return deferred.RunAsync();
 		}
 
-		public static Promise<T> WithCoroutine<T> (IEnumerator coroutine) {
+		public static Promise<T> WithCoroutine<T> (IEnumerator coroutine, bool autoStart = true) {
 			var deferred = new Deferred<T>();
-			return deferred.RunAsync(coroutine);
+			deferred.coroutine = coroutine;
+			Promise<T> promise;
+			if (autoStart) {
+				promise = deferred.RunAsync();
+			}
+			else {
+				promise = (Promise<T>)deferred;
+			}
+			return promise;
 		}
 
 		public static Promise<object[]> All(params Promise<object>[] promises) {
@@ -149,9 +158,15 @@ namespace Promises {
             remove { _onProgressed -= value; }
         }
 
+		public event Stopped OnStopped {
+			add { addOnStopped(value); }
+			remove { _onStopped -= value; }
+		}
+
         public delegate void Fulfilled(T result);
         public delegate void Failed(Exception error);
         public delegate void Progressed(float progress);
+		public delegate void Stopped();
 
         public PromiseState state { get { return _state; } }
         public T result { get { return _result; } }
@@ -162,6 +177,7 @@ namespace Promises {
         event Fulfilled _onFulfilled;
         event Failed _onFailed;
         event Progressed _onProgressed;
+		event Stopped _onStopped;
 
         protected PromiseState _state;
         protected T _result;
@@ -197,6 +213,8 @@ namespace Promises {
                 deferred._bias = (float)_depth / (float)deferred._depth * progress;
                 deferred.Progress(0);
             });
+			deferred.addOnStopped(Stop);
+
             return deferred.promise;
         }
 
@@ -223,13 +241,34 @@ namespace Promises {
             return deferred.promise;
         }
 
+		public void Stop () {
+			var deferred = (Deferred<T>)this;
+
+			// only implemented for coroutines
+			if (deferred.coroutine == null) return;
+
+			if (deferred.coroutineObject != null) {
+				deferred.coroutineObject.Stop();
+			}
+
+			transitionToState(PromiseState.Stopped);
+//			if (_onStopped != null) {
+//				_onStopped();
+//			}
+		}
+
         public override string ToString() {
             if (_state == PromiseState.Fulfilled)
-                return string.Format("[Promise<{0}>: state = {1}, result = {2}]", typeof(T).Name, _state, _result);
-            if (_state == PromiseState.Failed)
-                return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}, error = {3}]", typeof(T).Name, _state, _progress, error.Message);
-
-            return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}]", typeof(T).Name, _state, _progress);
+				return string.Format("[Promise<{0}>: state = {1}, result = {2}, thread: {3}, hashCode: {4}]", typeof(T).Name, _state, _result, GetThreadLogOutput(), GetHashCode());
+			if (_state == PromiseState.Failed)
+				return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}, error = {3}, thread: {4}, hashCode: {5}]", typeof(T).Name, _state, _progress, error.Message, GetThreadLogOutput(), GetHashCode());
+			
+			return string.Format("[Promise<{0}>: state = {1}, progress = {2:0.###}, thread: {3}, hashCode: {4}]", typeof(T).Name, _state, _progress, GetThreadLogOutput(), GetHashCode());
+        }
+        
+        string GetThreadLogOutput()
+        {
+			return string.Format("id/isAlive = {0}/{1}", _thread != null ? _thread.ManagedThreadId.ToString() : "??", _thread != null && _thread.IsAlive);      
         }
 
         void addOnFulfilled(Fulfilled value) {
@@ -253,18 +292,47 @@ namespace Promises {
                 value(_progress);
         }
 
+		void addOnStopped(Stopped value) {
+			if (_state == PromiseState.Stopped)
+				value();
+			else
+				_onStopped += value;
+		}
+
         protected void transitionToState(PromiseState newState) {
+			if (_state == newState || (_state == PromiseState.Fulfilled && newState == PromiseState.Stopped)) return;
+
             if (_state == PromiseState.Unfulfilled) {
                 _state = newState;
                 if (_state == PromiseState.Fulfilled) {
                     if (_onFulfilled != null)
-                        _onFulfilled(_result);
+                    {                    
+						_onFulfilled(_result);
+                    }
                 } else if (_state == PromiseState.Failed) {
                     if (_onFailed != null)
                         _onFailed(_error);
-                }
-            } else {
-                throw new Exception(string.Format("Invalid state transition from {0} to {1}", _state, newState));
+					_onFailed = null;
+                } else if (_state == PromiseState.Stopped) {
+					if (_onStopped != null)
+						_onStopped();
+					(this as Deferred<T>).Fail(new System.Exception("Promise was stopped by user."));
+				}
+            } else if (_state == PromiseState.Stopped) {
+				_state = newState;
+				if (_state == PromiseState.Failed) {
+					if (_onFailed != null)
+					{
+						_onFailed(_error);
+						_onFailed = null;
+					}
+				}
+			}
+			else {
+                throw new Exception(string.Format("Invalid state transition from {0} to {1}{2}", 
+                								_state, 
+                								newState,
+                								newState == PromiseState.Failed ? "\n(original error plus stacktrace: " + error.Message + "\n" + error.StackTrace + "\n)" : ""));
             }
 
             cleanup();

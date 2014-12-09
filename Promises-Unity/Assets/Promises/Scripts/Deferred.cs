@@ -7,6 +7,7 @@ namespace Promises {
         public Promise<T> promise { get { return this; } }
         public Func<T> action;
 		public IEnumerator coroutine;
+		public Coroutine<T> coroutineObject;
 
         public Promise<T> RunAsync() {
 			if (coroutine != null) {
@@ -29,7 +30,7 @@ namespace Promises {
         }
 
 		public Promise<T> RunAsync(IEnumerator coroutine) {
-			CoroutineRunner.StartRoutine<T>(coroutine, HandleCallback);
+			coroutineObject = CoroutineRunner.StartRoutine<T>(coroutine, HandleCallback);
 			return promise;
 		}
 

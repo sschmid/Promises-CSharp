@@ -18,9 +18,12 @@ namespace Promises
 		private T returnVal;
 		private Exception e;
 		public Coroutine coroutine;
+
+		private bool isRunning = true;
+		public bool IsRunning { get { return isRunning; } }
 		
 		public IEnumerator InternalRoutine(IEnumerator coroutine){
-			while(true){
+			while(isRunning){
 				try{
 					if(!coroutine.MoveNext()){
 						yield break;
@@ -31,7 +34,7 @@ namespace Promises
 					yield break;
 				}
 				object yielded = coroutine.Current;
-				if(yielded != null && !(yielded is YieldInstruction || yielded is IEnumerator)){
+				if(yielded != null && !(yielded is YieldInstruction || yielded is IEnumerator || yielded is WWW || yielded is AssetBundleCreateRequest)){
 					returnVal = (T)yielded;
 					yield break;
 				}
@@ -39,6 +42,11 @@ namespace Promises
 					yield return coroutine.Current;
 				}
 			}
+		}
+
+		public void Stop ()
+		{
+			isRunning = false;
 		}
 	}
 }
