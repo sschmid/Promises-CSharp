@@ -6,19 +6,15 @@ namespace Promises {
     public class CoroutineRunner : MonoBehaviour {
         static CoroutineRunner _coroutineRunner;
 
-        public static Coroutine<T> StartRoutine<T>(IEnumerator coroutine) {
-            return getRunner().StartCoroutine<T>(coroutine);
+        public static Coroutine<T> StartRoutine<T>(IEnumerator coroutine, Action<Coroutine<T>> onComplete = null) {
+            if (_coroutineRunner == null) {
+                _coroutineRunner = new GameObject("CoroutineRunner").AddComponent<CoroutineRunner>();
+            }
+
+            return _coroutineRunner.StartCoroutine<T>(coroutine, onComplete);
         }
 
-        public static Coroutine<T> StartRoutine<T>(IEnumerator coroutine, Action<Coroutine<T>> onComplete) {
-            return getRunner().StartCoroutine<T>(coroutine, onComplete);
-        }
-
-        public Coroutine<T> StartCoroutine<T>(IEnumerator coroutine) {
-            return StartCoroutine<T>(coroutine, null);
-        }
-
-        public Coroutine<T> StartCoroutine<T>(IEnumerator coroutine, Action<Coroutine<T>> onComplete) {
+        public Coroutine<T> StartCoroutine<T>(IEnumerator coroutine, Action<Coroutine<T>> onComplete = null) {
             Coroutine<T> coroutineObject = new Coroutine<T>();
             coroutineObject.coroutine = StartCoroutine(coroutineObject.WrapRoutine(coroutine));
             if (onComplete != null) {
@@ -31,14 +27,6 @@ namespace Promises {
         IEnumerator onCompleteCoroutine<T>(Coroutine<T> coroutine, Action<Coroutine<T>> onComplete) {
             yield return coroutine.coroutine;
             onComplete(coroutine);
-        }
-
-        static CoroutineRunner getRunner() {
-            if (!_coroutineRunner) {
-                _coroutineRunner = new GameObject("CoroutineRunner").AddComponent<CoroutineRunner>();
-            }
-
-            return _coroutineRunner;
         }
     }
 }
