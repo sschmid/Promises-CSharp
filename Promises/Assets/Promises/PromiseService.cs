@@ -128,4 +128,8 @@ public class PromiseService : MonoBehaviour {
     void updateName() {
         name = "Promises (" + _promises + " pending)";
     }
+
+    void OnDestroy() {
+        _service = null;
+    }
 }
