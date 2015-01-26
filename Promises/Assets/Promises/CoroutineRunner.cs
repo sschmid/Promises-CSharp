@@ -36,6 +36,7 @@ namespace Promises {
         static CoroutineRunner getRunner() {
             if (!_coroutineRunner) {
                 _coroutineRunner = new GameObject("CoroutineRunner").AddComponent<CoroutineRunner>();
+                DontDestroyOnLoad(_coroutineRunner);
             }
 
             return _coroutineRunner;

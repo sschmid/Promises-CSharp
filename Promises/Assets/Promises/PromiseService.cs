@@ -87,6 +87,7 @@ public class PromiseService : MonoBehaviour {
     static PromiseService getService() {
         if (_service == null) {
             _service = new GameObject("PromiseService").AddComponent<PromiseService>();
+            DontDestroyOnLoad(_service);
             _service.updateName();
         }
 
