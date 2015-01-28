@@ -20,16 +20,19 @@ namespace Promises {
         }
 
         void runAction() {
-            _thread = new Thread(() => {
+            var t = new Thread(() => {
                 try {
                     Fulfill(action());
                 } catch (Exception ex) {
                     Fail(ex);
                 }
             });
-            _thread.Name = "Deferred.RunAsync(" + action + ")";
-            _thread.IsBackground = true;
-            _thread.Start();
+            t.Name = "Deferred.RunAsync(" + action + ")";
+            t.IsBackground = true;
+
+            _state = _state.SetThread(t);
+
+            t.Start();
         }
 
         void runCoroutine() {
@@ -43,13 +46,13 @@ namespace Promises {
         }
 
         public void Fulfill(T result) {
-            _result = result;
+            _state = _state.SetResult(result);
             setProgress(1f);
             transitionToState(PromiseState.Fulfilled);
         }
 
         public void Fail(Exception ex) {
-            _error = ex;
+            _state = _state.SetError(ex);
             transitionToState(PromiseState.Failed);
         }
 
