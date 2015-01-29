@@ -1,6 +1,6 @@
-﻿using UnityEngine;
-using System;
+﻿using System;
 using System.Collections;
+using UnityEngine;
 
 namespace Promises {
     public class CoroutineRunner : MonoBehaviour {
@@ -27,6 +27,10 @@ namespace Promises {
         IEnumerator onCompleteCoroutine<T>(Coroutine<T> coroutine, Action<Coroutine<T>> onComplete) {
             yield return coroutine.coroutine;
             onComplete(coroutine);
+        }
+
+        void OnDestroy() {
+            _coroutineRunner = null;
         }
     }
 }

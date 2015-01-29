@@ -57,4 +57,3 @@ namespace Promises {
         }
     }
 }
-

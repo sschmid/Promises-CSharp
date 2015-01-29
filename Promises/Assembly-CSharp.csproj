@@ -59,7 +59,9 @@
      <Compile Include="Assets\Promises\CoroutineRunner.cs" />
      <Compile Include="Assets\Promises\Deferred.cs" />
      <Compile Include="Assets\Promises\Promise.cs" />
+     <Compile Include="Assets\Promises\PromiseFactory.cs" />
      <Compile Include="Assets\Promises\PromiseService.cs" />
+     <Compile Include="Assets\Promises\PromiseState.cs" />
      <Compile Include="Assets\Tests\Integration Tests\CoroutineGetsExceptionTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\CoroutineGetsLastYieldTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\CoroutineGetsLastestValueBeforeYieldBreakTest.cs" />
