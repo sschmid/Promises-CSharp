@@ -170,7 +170,6 @@ class describe_Then : nspec {
         p.state.should_be(PromiseState.Unfulfilled);
         p.error.should_be_null();
         p.progress.should_be(progress);
-        p.thread.should_not_be_null();
 
         if (p.result is int)
             p.result.should_be(0);
@@ -182,7 +181,6 @@ class describe_Then : nspec {
         p.state.should_be(PromiseState.Unfulfilled);
         p.error.should_be_null();
         p.progress.should_be(0f);
-        p.thread.should_be_null();
 
         if (p.result is int)
             p.result.should_be(0);
@@ -194,7 +192,6 @@ class describe_Then : nspec {
         p.state.should_be(PromiseState.Fulfilled);
         p.error.should_be_null();
         p.progress.should_be(1f);
-        p.thread.should_be_null();
         p.result.should_be(result);
     }
 
@@ -202,7 +199,6 @@ class describe_Then : nspec {
         p.state.should_be(PromiseState.Failed);
         p.error.should_not_be_null();
         p.error.Message.should_be(errorMessage);
-        p.thread.should_be_null();
 
         if (p.result is int)
             p.result.should_be(0);

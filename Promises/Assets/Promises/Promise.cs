@@ -160,47 +160,40 @@ namespace Promises {
         public T result { get { return _result; } }
         public Exception error { get { return _error; } }
         public float progress { get { return _progress; } }
-        public Thread thread { get { return _thread; } }
         public bool allDelegatesCalled { get { return _allDelegatesCalled; } }
 
         readonly PromiseState _state;
         readonly T _result;
         readonly Exception _error;
         readonly float _progress;
-        readonly Thread _thread;
         readonly bool _allDelegatesCalled;
 
-        State(PromiseState state, T result, Exception error, float progress, Thread thread, bool allDelegatesCalled) {
+        State(PromiseState state, T result, Exception error, float progress, bool allDelegatesCalled) {
             _state = state;
             _result = result;
             _error = error;
             _progress = progress;
-            _thread = thread;
             _allDelegatesCalled = allDelegatesCalled;
         }
 
         public static State<T> CreateUnfulfilled() {
-            return new State<T>(PromiseState.Unfulfilled, default(T), null, 0f, null, false);
+            return new State<T>(PromiseState.Unfulfilled, default(T), null, 0f, false);
         }
 
         public State<T> SetFulfilled(T result) {
-            return new State<T>(PromiseState.Fulfilled, result, null, 1f, null, false);
+            return new State<T>(PromiseState.Fulfilled, result, null, 1f, false);
         }
 
         public State<T> SetFailed(Exception error) {
-            return new State<T>(PromiseState.Failed, _result, error, _progress, null, false);
+            return new State<T>(PromiseState.Failed, _result, error, _progress, false);
         }
 
         public State<T> SetProgress(float p) {
-            return new State<T>(_state, _result, _error, p, _thread, false);
-        }
-
-        public State<T> SetThread(Thread t) {
-            return new State<T>(_state, _result, _error, _progress, t, false);
+            return new State<T>(_state, _result, _error, p, false);
         }
 
         public State<T> SetAllDelegatesCalled() {
-            return new State<T>(_state, _result, _error, _progress, _thread, true);
+            return new State<T>(_state, _result, _error, _progress, true);
         }
     }
 
@@ -228,7 +221,6 @@ namespace Promises {
         public T result { get { return _state.result; } }
         public Exception error { get { return _state.error; } }
         public float progress { get { return _state.progress; } }
-        public Thread thread { get { return _state.thread; } }
 
         event Fulfilled _onFulfilled;
         event Failed _onFailed;

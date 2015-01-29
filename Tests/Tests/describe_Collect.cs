@@ -26,7 +26,6 @@ class describe_Collect : nspec {
             it["has progressed 100%"] = () => promise.progress.should_be(1f);
             it["has result"] = () => promise.result.should_not_be_null();
             it["has no error"] = () => promise.error.should_be_null();
-            it["has no thread assigned"] = () => promise.thread.should_be_null();
             it["has results at correct index"] = () => {
                 (promise.result[0]).should_be_null();
                 (promise.result[1]).should_be("42");

@@ -20,19 +20,13 @@ namespace Promises {
         }
 
         void runAction() {
-            var t = new Thread(() => {
+            ThreadPool.QueueUserWorkItem(state => {
                 try {
                     Fulfill(action());
                 } catch (Exception ex) {
                     Fail(ex);
                 }
             });
-            t.Name = "Deferred.RunAsync(" + action + ")";
-            t.IsBackground = true;
-
-            _state = _state.SetThread(t);
-
-            t.Start();
         }
 
         void runCoroutine() {
