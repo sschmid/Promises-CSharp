@@ -46,14 +46,11 @@ namespace Promises {
         }
 
         public void Fulfill(T result) {
-            _state = _state.SetResult(result);
-            setProgress(1f);
-            transitionToState(PromiseState.Fulfilled);
+            transitionToFulfilled(result);
         }
 
         public void Fail(Exception ex) {
-            _state = _state.SetError(ex);
-            transitionToState(PromiseState.Failed);
+            transitionToFailed(ex);
         }
 
         public void Progress(float progress) {

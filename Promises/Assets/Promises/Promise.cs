@@ -40,7 +40,8 @@ namespace Promises {
                 promise.OnFulfilled += result => {
                     if (deferred.state == PromiseState.Unfulfilled) {
                         results[localIndex] = result;
-                        if (++done == promisesLength) {
+                        Interlocked.Increment(ref done);
+                        if (done == promisesLength) {
                             deferred.Fulfill(results);
                         }
                     }
@@ -86,7 +87,8 @@ namespace Promises {
                 };
                 promise.OnFailed += error => {
                     if (deferred.state == PromiseState.Unfulfilled) {
-                        if (++failed == promisesLength) {
+                        Interlocked.Increment(ref failed);
+                        if (failed == promisesLength) {
                             deferred.Fail(new PromiseAnyException());
                         }
                     }
@@ -124,7 +126,8 @@ namespace Promises {
                 var promise = promises[localIndex];
                 promise.OnFulfilled += result => {
                     results[localIndex] = result;
-                    if (++done == promisesLength) {
+                    Interlocked.Increment(ref done);
+                    if (done == promisesLength) {
                         deferred.Fulfill(results);
                     }
                 };
@@ -134,7 +137,8 @@ namespace Promises {
                         totalProgress += p.state == PromiseState.Failed ? 1f : p.progress;
                     }
                     deferred.Progress(totalProgress / (float)promisesLength);
-                    if (++done == promisesLength) {
+                    Interlocked.Increment(ref done);
+                    if (done == promisesLength) {
                         deferred.Fulfill(results);
                     }
                 };
@@ -157,43 +161,46 @@ namespace Promises {
         public Exception error { get { return _error; } }
         public float progress { get { return _progress; } }
         public Thread thread { get { return _thread; } }
+        public bool allDelegatesCalled { get { return _allDelegatesCalled; } }
 
         readonly PromiseState _state;
         readonly T _result;
         readonly Exception _error;
         readonly float _progress;
         readonly Thread _thread;
+        readonly bool _allDelegatesCalled;
 
-        State(PromiseState state, T result, Exception error, float progress, Thread thread) {
+        State(PromiseState state, T result, Exception error, float progress, Thread thread, bool allDelegatesCalled) {
             _state = state;
             _result = result;
             _error = error;
             _progress = progress;
             _thread = thread;
+            _allDelegatesCalled = allDelegatesCalled;
         }
 
-        public static State<T> New() {
-            return new State<T>(PromiseState.Unfulfilled, default(T), null, 0f, null);
+        public static State<T> CreateUnfulfilled() {
+            return new State<T>(PromiseState.Unfulfilled, default(T), null, 0f, null, false);
         }
 
-        public State<T> SetState(PromiseState s) {
-            return new State<T>(s, _result, _error, _progress, _thread);
+        public State<T> SetFulfilled(T result) {
+            return new State<T>(PromiseState.Fulfilled, result, null, 1f, null, false);
         }
 
-        public State<T> SetResult(T r) {
-            return new State<T>(_state, r, _error, _progress, _thread);
-        }
-
-        public State<T> SetError(Exception e) {
-            return new State<T>(_state, _result, e, _progress, _thread);
+        public State<T> SetFailed(Exception error) {
+            return new State<T>(PromiseState.Failed, _result, error, _progress, null, false);
         }
 
         public State<T> SetProgress(float p) {
-            return new State<T>(_state, _result, _error, p, _thread);
+            return new State<T>(_state, _result, _error, p, _thread, false);
         }
 
         public State<T> SetThread(Thread t) {
-            return new State<T>(_state, _result, _error, _progress, t);
+            return new State<T>(_state, _result, _error, _progress, t, false);
+        }
+
+        public State<T> SetAllDelegatesCalled() {
+            return new State<T>(_state, _result, _error, _progress, _thread, true);
         }
     }
 
@@ -228,17 +235,18 @@ namespace Promises {
         event Progressed _onProgressed;
 
         protected volatile State<T> _state;
+        readonly object _lock = new object();
 
         int _depth = 1;
         float _bias = 0f;
         float _fraction = 1f;
 
         public Promise() {
-            _state = State<T>.New();
+            _state = State<T>.CreateUnfulfilled();
         }
 
         public void Await() {
-            while (state == PromiseState.Unfulfilled || thread != null);
+            while (state == PromiseState.Unfulfilled || !_state.allDelegatesCalled);
         }
 
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {
@@ -316,54 +324,79 @@ namespace Promises {
         }
 
         void addOnFulfilled(Fulfilled value) {
-            if (state == PromiseState.Unfulfilled) {
-                _onFulfilled += value;
-            } else if (state == PromiseState.Fulfilled) {
-                value(result);
+            lock (_lock) {
+                if (state == PromiseState.Unfulfilled) {
+                    _onFulfilled += value;
+                } else if (state == PromiseState.Fulfilled) {
+                    value(result);
+                }
             }
         }
 
         void addOnFailed(Failed value) {
-            if (state == PromiseState.Unfulfilled) {
-                _onFailed += value;
-            } else if (state == PromiseState.Failed) {
-                value(error);
+            lock (_lock) {
+                if (state == PromiseState.Unfulfilled) {
+                    _onFailed += value;
+                } else if (state == PromiseState.Failed) {
+                    value(error);
+                }
             }
         }
 
         void addOnProgress(Progressed value) {
-            if (progress < 1f) {
-                _onProgressed += value;
-            } else {
-                value(progress);
+            lock (_lock) {
+                if (progress < 1f) {
+                    _onProgressed += value;
+                } else {
+                    value(progress);
+                }
             }
         }
 
-        protected void transitionToState(PromiseState newState) {
-            if (state == PromiseState.Unfulfilled) {
-                _state = _state.SetState(newState);
-                if (state == PromiseState.Fulfilled) {
+        protected void transitionToFulfilled(T result) {
+            lock (_lock) {
+                if (state == PromiseState.Unfulfilled) {
+                    var oldProgress = progress;
+                    _state = _state.SetFulfilled(result);
+                    if (Math.Abs(progress - oldProgress) > float.Epsilon) {
+                        if (_onProgressed != null) {
+                            _onProgressed(progress);
+                        }
+                    }
                     if (_onFulfilled != null) {
                         _onFulfilled(result);
                     }
-                } else if (state == PromiseState.Failed) {
-                    if (_onFailed != null) {
-                        _onFailed(error);
-                    }
+                } else {
+                    throw new Exception(string.Format("Invalid state transition from {0} to {1}", state, PromiseState.Fulfilled));
                 }
-            } else {
-                throw new Exception(string.Format("Invalid state transition from {0} to {1}", state, newState));
             }
 
             cleanup();
         }
 
+        protected void transitionToFailed(Exception error) {
+            lock (_lock) {
+                if (state == PromiseState.Unfulfilled) {
+                    _state = _state.SetFailed(error);
+                    if (_onFailed != null) {
+                        _onFailed(error);
+                    }
+                } else {
+                    throw new Exception(string.Format("Invalid state transition from {0} to {1}", state, PromiseState.Failed));
+                }
+            }
+            
+            cleanup();
+        }
+
         protected void setProgress(float p) {
-            var newProgress = _bias + p * _fraction;
-            if (Math.Abs(newProgress - progress) > float.Epsilon) {
-                _state = _state.SetProgress(newProgress);
-                if (_onProgressed != null) {
-                    _onProgressed(progress);
+            lock (_lock) {
+                var newProgress = _bias + p * _fraction;
+                if (Math.Abs(newProgress - progress) > float.Epsilon) {
+                    _state = _state.SetProgress(newProgress);
+                    if (_onProgressed != null) {
+                        _onProgressed(progress);
+                    }
                 }
             }
         }
@@ -372,7 +405,7 @@ namespace Promises {
             _onFulfilled = null;
             _onFailed = null;
             _onProgressed = null;
-            _state = _state.SetThread(null);
+            _state = _state.SetAllDelegatesCalled();
         }
     }
 }
