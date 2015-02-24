@@ -155,7 +155,7 @@ namespace Promises {
                 if (state == PromiseState.Unfulfilled) {
                     var oldProgress = progress;
                     _state = _state.SetFulfilled(result);
-                    if (Math.Abs(progress - oldProgress) > float.Epsilon) {
+                    if (progress != oldProgress) {
                         if (_onProgressed != null) {
                             _onProgressed(progress);
                         }
@@ -189,7 +189,7 @@ namespace Promises {
         protected void setProgress(float p) {
             lock (_lock) {
                 var newProgress = _bias + p * _fraction;
-                if (Math.Abs(newProgress - progress) > float.Epsilon) {
+                if (newProgress != progress) {
                     _state = _state.SetProgress(newProgress);
                     if (_onProgressed != null) {
                         _onProgressed(progress);
