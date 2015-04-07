@@ -27,7 +27,6 @@ class describe_All : nspec {
             it["has progressed 100%"] = () => promise.progress.should_be(1f);
             it["has result"] = () => promise.result.should_not_be_null();
             it["has no error"] = () => promise.error.should_be_null();
-            it["has no thread assigned"] = () => promise.thread.should_be_null();
             it["has results at correct index"] = () => {
                 (promise.result[0]).should_be(42);
                 (promise.result[1]).should_be("42");
@@ -65,7 +64,6 @@ class describe_All : nspec {
             it["has progressed 50%"] = () => promise.progress.should_be(0.5f);
             it["has no result"] = () => promise.result.should_be_null();
             it["has error"] = () => promise.error.Message.should_be("error 42");
-            it["has no thread assigned"] = () => promise.thread.should_be_null();
             it["calls progress"] = () => {
                 eventProgresses.Count.should_be(1);
                 eventProgresses[0].should_be(0.5f);

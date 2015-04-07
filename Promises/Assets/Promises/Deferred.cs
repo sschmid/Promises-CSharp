@@ -20,16 +20,13 @@ namespace Promises {
         }
 
         void runAction() {
-            _thread = new Thread(() => {
+            ThreadPool.QueueUserWorkItem(state => {
                 try {
                     Fulfill(action());
                 } catch (Exception ex) {
                     Fail(ex);
                 }
             });
-            _thread.Name = "Deferred.RunAsync(" + action + ")";
-            _thread.IsBackground = true;
-            _thread.Start();
         }
 
         void runCoroutine() {
@@ -43,14 +40,11 @@ namespace Promises {
         }
 
         public void Fulfill(T result) {
-            _result = result;
-            setProgress(1f);
-            transitionToState(PromiseState.Fulfilled);
+            transitionToFulfilled(result);
         }
 
         public void Fail(Exception ex) {
-            _error = ex;
-            transitionToState(PromiseState.Failed);
+            transitionToFailed(ex);
         }
 
         public void Progress(float progress) {
@@ -63,4 +57,3 @@ namespace Promises {
         }
     }
 }
-

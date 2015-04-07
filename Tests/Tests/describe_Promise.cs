@@ -37,7 +37,7 @@ class describe_Promise : nspec {
                 };
                 promise.OnProgressed += progress => {
                     eventProgress = progress;
-                    eventProgress = progress;
+                    progressCalled = true;
                 };
             };
 
@@ -45,16 +45,10 @@ class describe_Promise : nspec {
             it["has progressed 0%"] = () => promise.progress.should_be(0f);
             it["has no result"] = () => promise.result.should_be_null();
             it["has no error"] = () => promise.error.should_be_null();
-            it["has a background thread assigned"] = () => {
-                promise.thread.should_not_be_null();
-                promise.thread.should_not_be(Thread.CurrentThread);
-                promise.thread.IsBackground.should_be_true();
-            };
 
             context["await"] = () => {
                 it["blocks until finished"] = () => {
                     promise.Await();
-                    promise.thread.should_be_null();
                     promise.state.should_be(PromiseState.Fulfilled);
                 };
 
@@ -79,7 +73,6 @@ class describe_Promise : nspec {
                 it["has progressed 100%"] = () => promise.progress.should_be(1f);
                 it["has result"] = () => promise.result.should_be("42");
                 it["has no error"] = () => promise.error.should_be_null();
-                it["has no thread assigned"] = () => promise.thread.should_be_null();
 
                 context["events"] = () => {
                     it["calls OnFulfilled"] = () => eventResult.should_be("42");
@@ -122,7 +115,6 @@ class describe_Promise : nspec {
             it["has progressed 0%"] = () => promise.progress.should_be(0f);
             it["has no result"] = () => promise.result.should_be_null();
             it["has error"] = () => promise.error.Message.should_be("error 42");
-            it["has no thread assigned"] = () => promise.thread.should_be_null();
 
             context["events"] = () => {
                 it["doesn't call OnFulfilled"] = () => fulfilledCalled.should_be_false();

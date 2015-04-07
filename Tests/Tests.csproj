@@ -59,7 +59,6 @@
     <None Include="Libraries\nspec\NSpecRunner.exe" />
     <None Include="Libraries\nspec\NSpecRunner.exe.config" />
     <None Include="Libraries\nspec\NSpecRunner.exe.mdb" />
-    <None Include="Libraries\nspec\Domain\Formatters\Templates\TiddlyWiki_Template.html" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Promises\Assembly-CSharp.csproj">
