@@ -60,11 +60,12 @@ namespace Promises {
             }
         }
 
-        static PromiseService getService() {
-            if (_service == null) {
-                _service = new GameObject("PromiseService").AddComponent<PromiseService>();
-                _service.updateName();
-            }
+    static PromiseService getService() {
+        if (_service == null) {
+            _service = new GameObject("PromiseService").AddComponent<PromiseService>();
+            DontDestroyOnLoad(_service);
+            _service.updateName();
+        }
 
             return _service;
         }
