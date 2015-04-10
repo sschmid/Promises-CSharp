@@ -17,6 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="Promises/Assets/**/*.cs" target="content/" />
+    <file src="Promises/Assets/Promises/**/*.cs" target="content/Promises" />
   </files>
 </package>
