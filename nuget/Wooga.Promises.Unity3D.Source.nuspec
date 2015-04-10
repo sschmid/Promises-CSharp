@@ -5,8 +5,8 @@
     <version>@build.number@</version>
     <authors>@authors@</authors>
     <owners>@authors@</owners>
-    <licenseUrl>http://github.com/wooga/wooga-litjson/blob/master/LICENSE.txt</licenseUrl>
-    <projectUrl>http://github.com/wooga/wooga-litjson</projectUrl>
+    <!-- <licenseUrl>http://github.com/wooga/wooga-litjson/blob/master/LICENSE.txt</licenseUrl> -->
+    <projectUrl>http://github.com/wooga/Promises-CSharp</projectUrl>
     <!--<iconUrl>https://raw.githubusercontent.com/fsprojects/ProjectScaffold/master/docs/files/img/logo.png</iconUrl>-->
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>@summary@</summary>
@@ -17,6 +17,6 @@
     <dependencies />
   </metadata>
   <files>
-    <file src="Promises/Assets/Promises/*.cs" target="content/" />
+    <file src="Promises/Assets/**/*.cs" target="content/" />
   </files>
 </package>
