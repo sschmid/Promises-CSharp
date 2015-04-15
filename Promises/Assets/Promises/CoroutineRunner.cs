@@ -9,6 +9,7 @@ namespace Promises {
         public static Coroutine<T> StartRoutine<T>(IEnumerator coroutine, Action<Coroutine<T>> onComplete = null) {
             if (_coroutineRunner == null) {
                 _coroutineRunner = new GameObject("CoroutineRunner").AddComponent<CoroutineRunner>();
+                DontDestroyOnLoad(_coroutineRunner);
             }
 
             return _coroutineRunner.StartCoroutine<T>(coroutine, onComplete);
