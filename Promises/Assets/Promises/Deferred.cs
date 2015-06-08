@@ -30,13 +30,13 @@ namespace Promises {
         }
 
         void runCoroutine() {
-            CoroutineRunner.StartRoutine<T>(coroutine(), c => {
+            MainThreadDispatcher.Dispatch(() => CoroutineRunner.StartRoutine<T>(coroutine(), c => {
                 try {
                     Fulfill(c.returnValue);
                 } catch (Exception ex) {
                     Fail(ex);
                 }
-            });
+            }));
         }
 
         public void Fulfill(T result) {
