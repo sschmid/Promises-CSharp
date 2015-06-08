@@ -57,6 +57,8 @@ class describe_Promise : nspec {
                     promise.Await();
                     true.should_be_true();
                 };
+
+                it["returns promise"] = () => promise.Await().result.should_be("42");
             };
 
             context["events"] = () => {

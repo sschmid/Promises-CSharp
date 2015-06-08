@@ -1,7 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
 using NUnit.Framework;
 using Promises;
-using System.Threading;
-using System;
 
 [TestFixture]
 class PromiseTests {
@@ -83,6 +84,21 @@ class PromiseTests {
         var d = new Deferred<int>();
         d.Progress(0.42f);
         d.QueueOnMainThread(null, null, null);
+    }
+
+    [Test]
+    public void then_coroutine_after_action() {
+        MainThreadDispatcher.Init();
+        var p = Promise
+            .WithAction(() => 42)
+            .ThenCoroutine<int>(coroutine);
+
+        p.OnFulfilled += result => Assert.AreEqual(42 * 42, result);
+        p.OnFailed += error => Assert.Fail();
+    }
+
+    System.Collections.IEnumerator coroutine(int result) {
+        yield return 42 * result;
     }
 }
 

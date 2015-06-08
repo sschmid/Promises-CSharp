@@ -42,8 +42,9 @@ namespace Promises {
             _state = State<T>.CreateUnfulfilled();
         }
 
-        public void Await() {
+        public Promise<T> Await() {
             while (state == PromiseState.Unfulfilled || !_state.allDelegatesCalled);
+            return this;
         }
 
         public Promise<TThen> Then<TThen>(Func<T, TThen> action) {
