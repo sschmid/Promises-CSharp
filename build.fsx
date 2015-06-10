@@ -57,7 +57,6 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/wooga"
 
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
-let githubAccessToken = "71218e219bf125c5cee99b5b6ee2f93c4729e3ec"
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
@@ -147,6 +146,7 @@ Target "Release" (fun _ ->
                  <| release.NugetVersion
 
   // release on github
+  let githubAccessToken = "" //TODO read from file
   createTokenClient githubAccessToken
   |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
   |> uploadFile nugetPkg
