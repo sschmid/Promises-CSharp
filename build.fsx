@@ -57,6 +57,7 @@ let gitRaw = environVarOrDefault "gitRaw" "https://raw.github.com/wooga"
 
 let release = LoadReleaseNotes "RELEASE_NOTES.md"
 
+let githubAccessToken = "71218e219bf125c5cee99b5b6ee2f93c4729e3ec"
 // --------------------------------------------------------------------------------------
 // Build a NuGet package
 
@@ -126,6 +127,13 @@ Target "All" DoNothing
 #load "paket-files/fsharp/FAKE/modules/Octokit/Octokit.fsx"
 open Octokit
 
+let createTokenClient token = 
+    async { 
+        let github = new GitHubClient(new ProductHeaderValue("FAKE"))
+        github.Credentials <- Credentials(token)
+        return github
+    }
+
 Target "Release" (fun _ ->
   StageAll ""
   Git.Commit.Commit "" (sprintf "Bump version to %s" release.NugetVersion)
@@ -139,7 +147,7 @@ Target "Release" (fun _ ->
                  <| release.NugetVersion
 
   // release on github
-  createClient (getBuildParamOrDefault "github-user" "") (getBuildParamOrDefault "github-pw" "")
+  createTokenClient githubAccessToken
   |> createDraft gitOwner gitName release.NugetVersion (release.SemVer.PreRelease <> None) release.Notes
   |> uploadFile nugetPkg
   |> releaseDraft
