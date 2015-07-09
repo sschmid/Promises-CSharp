@@ -7,6 +7,7 @@ public class CoroutinePromiseThenTest : MonoBehaviour {
     public int result;
 
     void Start() {
+        MainThreadDispatcher.Init();
         Promise.WithCoroutine<int>(coroutine)
             .ThenCoroutine<int>(thenCoroutine)
             .OnFulfilled += r => result = r;

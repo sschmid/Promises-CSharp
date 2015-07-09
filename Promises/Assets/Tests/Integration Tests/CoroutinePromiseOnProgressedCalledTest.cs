@@ -7,6 +7,7 @@ public class CoroutinePromiseOnProgressedCalledTest : MonoBehaviour {
     public float progress;
 
     void Start() {
+        MainThreadDispatcher.Init();
         Promise.WithCoroutine<int>(coroutine).OnProgressed += p => progress = p;
     }
 

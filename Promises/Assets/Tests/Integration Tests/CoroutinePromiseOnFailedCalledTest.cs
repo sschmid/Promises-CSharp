@@ -8,6 +8,7 @@ public class CoroutinePromiseOnFailedCalledTest : MonoBehaviour {
     public Exception result;
 
     void Start() {
+        MainThreadDispatcher.Init();
         Promise.WithCoroutine<int>(coroutine).OnFailed += error => result = error;
     }
 

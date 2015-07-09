@@ -8,6 +8,7 @@ public class CoroutinePromiseRescueTest : MonoBehaviour {
     public int result;
 
     void Start() {
+        MainThreadDispatcher.Init();
         Promise.WithCoroutine<int>(coroutine)
             .RescueCoroutine(rescueCoroutine)
             .OnFulfilled += r => result = r;

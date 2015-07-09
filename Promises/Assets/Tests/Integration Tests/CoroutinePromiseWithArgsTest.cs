@@ -7,6 +7,7 @@ public class CoroutinePromiseWithArgsTest : MonoBehaviour {
     public int result;
 
     void Start() {
+        MainThreadDispatcher.Init();
         Promise.WithCoroutine<int>(() => coroutine(10)).OnFulfilled += r => result = r;
     }
 

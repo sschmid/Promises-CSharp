@@ -51,6 +51,7 @@
      <Compile Include="Assets\Example\AnyProgressController.cs" />
      <Compile Include="Assets\Example\CollectProgressController.cs" />
      <Compile Include="Assets\Example\DeferredProgressController.cs" />
+     <Compile Include="Assets\Example\ExampleInitContoller.cs" />
      <Compile Include="Assets\Example\RescueProgressController.cs" />
      <Compile Include="Assets\Example\TestCube.cs" />
      <Compile Include="Assets\Example\ThenCoroutineController.cs" />
