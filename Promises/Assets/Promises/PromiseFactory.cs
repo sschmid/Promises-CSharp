@@ -17,9 +17,9 @@ namespace Promises {
             return deferred.RunAsync();
         }
 
-        public static Promise<object[]> All(params Promise<object>[] promises) {
-            var deferred = new Deferred<object[]>();
-            var results = new object[promises.Length];
+        public static Promise<T[]> All<T>(params Promise<T>[] promises) {
+            var deferred = new Deferred<T[]>();
+            var results = new T[promises.Length];
             var done = 0;
 
             var initialProgress = 0f;
