@@ -77,22 +77,21 @@ namespace Promises {
         }
 
         public Promise<T> Rescue(Func<Exception, T> action) {
-            var deferred = createDeferredRescue();
-            deferred.action = () => action(error);
+            var deferred = createDeferredRescue(d => d.action = () => action(error));
             return deferred.promise;
         }
 
         public Promise<T> RescueCoroutine(Func<Exception, IEnumerator> coroutine) {
-            var deferred = createDeferredRescue();
-            deferred.coroutine = () => coroutine(error);
+            var deferred = createDeferredRescue(d => d.coroutine = () => coroutine(error));
             return deferred.promise;
         }
 
-        Deferred<T> createDeferredRescue() {
+        Deferred<T> createDeferredRescue(Action<Deferred<T>> setAction) {
             var deferred = new Deferred<T>();
             deferred._depth = _depth;
             deferred._fraction = 1f;
             deferred.Progress(progress);
+            setAction(deferred);
             addOnFulfilled(deferred.Fulfill);
             addOnFailed(error => deferred.RunAsync());
             addOnProgress(deferred.Progress);

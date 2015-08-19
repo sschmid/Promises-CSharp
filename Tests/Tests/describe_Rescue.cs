@@ -25,6 +25,17 @@ class describe_Rescue : nspec {
             eventResult.should_be("rescue");
         };
 
+        it["rescues already failed promise"] = () => {
+            promise = TestHelper.PromiseWithError<string>("error 42").Rescue(error => "rescue");
+            promise.OnFulfilled += result => eventResult = result;
+            promise.Await();
+            promise.state.should_be(PromiseState.Fulfilled);
+            promise.progress.should_be(1f);
+            promise.result.should_be("rescue");
+            promise.error.should_be_null();
+            eventResult.should_be("rescue");
+        };
+
         it["fulfills when no error"] = () => {
             promise = TestHelper.PromiseWithResult("42", delay).Rescue(error => "rescue");
             promise.OnFulfilled += result => eventResult = result;
