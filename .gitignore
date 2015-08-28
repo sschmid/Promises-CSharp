@@ -26,3 +26,7 @@ Promises/Library/ShaderCache
 shadercompiler-64bit*
 ShaderCache.db
 Promises/Library/GiCache
+
+packages/
+paket-files/
+bin/*.nupkg
