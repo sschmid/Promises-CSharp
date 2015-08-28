@@ -15,6 +15,8 @@ namespace Promises {
     }
 
     public class PromiseService : MonoBehaviour {
+        public int promises { get { return _promises; } }
+
         static PromiseService _service;
         int _promises;
 
@@ -85,14 +87,19 @@ namespace Promises {
                     }
                 }
 
-                if (p.onFulfilled != null && p.promise.state == PromiseState.Fulfilled) {
-                    p.onFulfilled(p.promise.result);
+                if (p.promise.state == PromiseState.Fulfilled) {
+                    if (p.onFulfilled != null) {
+                        p.onFulfilled(p.promise.result);
+                    }
                     _promises--;
                     updateName();
                     yield break;
                 }
-                if (p.onFailed != null && p.promise.state == PromiseState.Failed) {
-                    p.onFailed(p.promise.error);
+
+                if (p.promise.state == PromiseState.Failed) {
+                    if (p.onFailed != null) {
+                        p.onFailed(p.promise.error);
+                    }
                     _promises--;
                     updateName();
                     yield break;

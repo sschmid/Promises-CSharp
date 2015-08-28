@@ -75,6 +75,8 @@
      <Compile Include="Assets\Tests\Integration Tests\CoroutinePromiseRescueTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\CoroutinePromiseThenTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\CoroutinePromiseWithArgsTest.cs" />
+     <Compile Include="Assets\Tests\Integration Tests\PromiseCleansUpOnFailedTest.cs" />
+     <Compile Include="Assets\Tests\Integration Tests\PromiseCleansUpOnFulfilledTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\PromiseOnFailedCalledTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\PromiseOnFulfilledCalledTest.cs" />
      <Compile Include="Assets\Tests\Integration Tests\PromiseOnProgressedCalledTest.cs" />
