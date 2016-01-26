@@ -1,28 +1,24 @@
-test-results
-bin
-*.userprefs
+# Windows
+Thumbs.db
 
-### Unity
-[Bb]uild
-[Cc]ache
-[Mm]etadata/
-[Tt]emp/
-[Oo]bj/
-assetDatabase3
-expandedItems
-guidmapper
-FailedAssetImports.txt
-AssetImportState
-EditorUserBuildSettings.asset
-ScriptMapper
-AssetServerCacheV3
-InspectorExpandedItems.asset
-ScriptAssemblies/
-CurrentLayout.dwlt
-*.unityproj
-Promises/Assets/UnityTestTools
-UnityTestTools.meta
-Promises/Library/ShaderCache
-shadercompiler-64bit*
-ShaderCache.db
-Promises/Library/GiCache
+# Mac
+.DS_Store
+
+# Unity
+Library
+Temp
+*.unitypackage
+*-CSharp.csproj
+*-CSharp-vs.csproj
+*-CSharp-Editor.csproj
+*-CSharp-Editor-vs.csproj
+*-CSharp-Editor-firstpass.csproj
+*-CSharp-firstpass.csproj
+
+# Xamarin
+obj
+*.userprefs
+test-results
+
+Tests/bin
+Promises/Build
