@@ -97,8 +97,32 @@ class PromiseTests {
         p.OnFailed += error => Assert.Fail();
     }
 
+    [Test]
+    public void when_OnFulfilled_throws() {
+        MainThreadDispatcher.Init();
+        var p = Promise.WithCoroutine<int>(() => coroutine(42));
+
+        p.OnFulfilled += result => {
+            throw new IndexOutOfRangeException("Ignore me - I'm here intentionally");
+        };
+        p.OnFailed += error => Assert.Fail();
+    }
+
+    [Test, ExpectedException(typeof(IndexOutOfRangeException))]
+    public void when_OnFailed_throws() {
+        MainThreadDispatcher.Init();
+        var p = Promise.WithCoroutine<int>(() => coroutineWithError());
+
+        p.OnFulfilled += result => Assert.Fail();
+        p.OnFailed += error => Assert.Fail();
+    }
+
     System.Collections.IEnumerator coroutine(int result) {
         yield return 42 * result;
+    }
+
+    System.Collections.IEnumerator coroutineWithError() {
+        throw new IndexOutOfRangeException("Ignore me - I'm here intentionally");
     }
 }
 

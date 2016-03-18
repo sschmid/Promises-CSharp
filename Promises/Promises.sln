@@ -23,7 +23,7 @@ Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
-								GlobalSection(MonoDevelopProperties) = preSolution
+	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.inheritsSet = VisualStudio
@@ -31,7 +31,6 @@ Global
 		$1.scope = text/x-csharp
 		$0.CSharpFormattingPolicy = $2
 		$2.IndentSwitchBody = True
-		$2.AutoPropertyFormatting = ForceOneLine
 		$2.NamespaceBraceStyle = EndOfLine
 		$2.ClassBraceStyle = EndOfLine
 		$2.InterfaceBraceStyle = EndOfLine
@@ -49,6 +48,8 @@ Global
 		$2.NewParentheses = False
 		$2.SpacesBeforeBrackets = False
 		$2.BlankLinesBeforeUsings = 1
+		$2.BlankLinesBetweenMembers = 0
+		$2.AlignToFirstMethodDeclarationParameter = False
 		$2.AlignToFirstIndexerDeclarationParameter = False
 		$2.inheritsSet = Mono
 		$2.inheritsScope = text/x-csharp
@@ -64,7 +65,7 @@ Global
 		$5.Rules = $6
 		$6.NamingRule = $7
 		$7.Name = PascalCase
-		$7.AffectedEntity = Namespace, Class, Struct, Enum, Delegate, Event, EnumMember
+		$7.AffectedEntity = Namespace, Class, Struct, Enum, Delegate, Event, EnumMember, Label
 		$7.VisibilityMask = VisibilityMask
 		$7.NamingStyle = PascalCase
 		$7.IncludeInstanceMembers = True
@@ -81,7 +82,7 @@ Global
 		$6.NamingRule = $10
 		$10.Name = Attributes
 		$10.RequiredSuffixes = $11
-		$11.String = Attributes
+		$11.String = Attribute
 		$10.AffectedEntity = CustomAttributes
 		$10.VisibilityMask = VisibilityMask
 		$10.NamingStyle = PascalCase
@@ -107,9 +108,9 @@ Global
 		$14.IncludeStaticEntities = True
 		$6.NamingRule = $16
 		$16.Name = camelCase
-		$16.AffectedEntity = Property, ConstantField, LocalVars
+		$16.AffectedEntity = Property, Parameter, LambdaParameter, LocalVariable
 		$16.VisibilityMask = VisibilityMask
-		$16.NamingStyle = CamelCase
+		$16.NamingStyle = CamelCaseWithLowerLetterUnderscore
 		$16.IncludeInstanceMembers = True
 		$16.IncludeStaticEntities = True
 		$6.NamingRule = $17
@@ -151,5 +152,19 @@ Global
 		$22.NamingStyle = PascalCase
 		$22.IncludeInstanceMembers = True
 		$22.IncludeStaticEntities = True
+		$6.NamingRule = $24
+		$24.Name = Constants
+		$24.AffectedEntity = ConstantField
+		$24.VisibilityMask = VisibilityMask
+		$24.NamingStyle = AllUpper
+		$24.IncludeInstanceMembers = True
+		$24.IncludeStaticEntities = True
+		$6.NamingRule = $25
+		$25.Name = Constants (local)
+		$25.AffectedEntity = LocalConstant
+		$25.VisibilityMask = VisibilityMask
+		$25.NamingStyle = CamelCase
+		$25.IncludeInstanceMembers = True
+		$25.IncludeStaticEntities = True
 	EndGlobalSection
 EndGlobal

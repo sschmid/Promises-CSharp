@@ -185,6 +185,27 @@ class describe_Promise : nspec {
             };
         };
 
+        context["when event handler throws exceptions"] = () => {
+
+            xit["OnFulfilled"] = expect<ArgumentOutOfRangeException>(() => {
+                promise = TestHelper.PromiseWithResult("42", delay);
+
+                promise.OnFulfilled += result => {
+                    throw new ArgumentOutOfRangeException();
+                };
+                promise.Await();
+            });
+
+            xit["OnFailed"] = expect<ArgumentOutOfRangeException>(() => {
+                promise = TestHelper.PromiseWithError<string>("Fail Test", delay);
+
+                promise.OnFailed += error => {
+                    throw new ArgumentOutOfRangeException();
+                };
+                promise.Await();
+            });
+        };
+
         context["wrap"] = () => {
 
             Promise<object> wrapped = null;

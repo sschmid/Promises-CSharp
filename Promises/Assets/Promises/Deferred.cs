@@ -21,20 +21,38 @@ namespace Promises {
 
         void runAction() {
             ThreadPool.QueueUserWorkItem(state => {
+
+                T actionResult = default(T);
+                bool fulfilled = false;
+
                 try {
-                    Fulfill(action());
+                    actionResult = action();
+                    fulfilled = true;
                 } catch (Exception ex) {
                     Fail(ex);
+                }
+
+                if (fulfilled) {
+                    Fulfill(actionResult);
                 }
             });
         }
 
         void runCoroutine() {
             MainThreadDispatcher.Dispatch(() => CoroutineRunner.StartRoutine<T>(coroutine(), c => {
+
+                T actionResult = default(T);
+                bool fulfilled = false;
+
                 try {
-                    Fulfill(c.returnValue);
+                    actionResult = c.returnValue;
+                    fulfilled = true;
                 } catch (Exception ex) {
                     Fail(ex);
+                }
+
+                if (fulfilled) {
+                    Fulfill(actionResult);
                 }
             }));
         }
